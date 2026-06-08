@@ -11,9 +11,11 @@ public class User {
     @Id
     @GeneratedValue
     Long id;
+
     @NotBlank
     @Column(unique = true)
     String email;
+
     @NotBlank
     String password;
 }

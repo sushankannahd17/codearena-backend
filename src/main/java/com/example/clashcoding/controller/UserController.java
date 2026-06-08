@@ -19,14 +19,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 public class UserController {
     @Autowired
-    private UserService userService;
+    private UserService service;
 
     @Autowired
     private JwtUtils jwtUtils;
     @PostMapping("/signup")
     public ResponseEntity<?> signUp(@RequestBody UserDTO dto) {
         try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseBody("success", userService.signUp(dto)));
+            return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseBody("success", service.signUp(dto)));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(new ResponseBody("error", e.getMessage()));
         }
@@ -35,7 +35,7 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserDTO dto, HttpServletResponse response) {
         try {
-            Long userID = userService.login(dto);
+            Long userID = service.login(dto);
 
             String token = jwtUtils.generateToken(dto.getEmail());
 

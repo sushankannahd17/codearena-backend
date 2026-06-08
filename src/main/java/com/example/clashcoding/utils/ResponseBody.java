@@ -1,5 +1,6 @@
 package com.example.clashcoding.utils;
 
+import com.example.clashcoding.models.Question;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
