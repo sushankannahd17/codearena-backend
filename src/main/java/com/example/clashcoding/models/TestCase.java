@@ -2,7 +2,6 @@ package com.example.clashcoding.models;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Entity
@@ -21,5 +20,5 @@ public class TestCase {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "problem_id")
-    public Question problem;
+    public Question question;
 }

@@ -21,5 +21,5 @@ public class ExamplesIO {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "problem_id")
-    public Question problem;
+    public Question question;
 }
