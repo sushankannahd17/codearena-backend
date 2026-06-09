@@ -73,4 +73,12 @@ public class QuestionService {
         questionRepository.save(question);
         return "TestCases Updated Successfully";
     }
+
+    public String deleteQuestion(Long questionID) {
+        Question question = questionRepository.findById(questionID).orElseThrow(() -> new ExceptionConfig("Question not found"));
+
+        questionRepository.deleteById(questionID);
+
+        return "Question deleted successfully";
+    }
 }

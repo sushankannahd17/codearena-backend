@@ -76,4 +76,29 @@ public class QuestionController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseBody("error", e.getMessage()));
         }
     }
+
+    @DeleteMapping("/{questionID}")
+    public ResponseEntity<?> deleteQuestion(@PathVariable Long questionID, HttpServletRequest request) {
+        try {
+            Cookie[] cookies = request.getCookies();
+
+            String email = null;
+            for (Cookie cookie : cookies) {
+                if ("jwt".equalsIgnoreCase(cookie.getName())) {
+                    String token = cookie.getValue();
+
+                    email = jwtUtils.extractEmail(token);
+                    break;
+                }
+            }
+
+            if (email == null) {
+                throw new ExceptionConfig("User is not authenticated");
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.deleteQuestion(questionID)));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseBody("error", e.getMessage()));
+        }
+    }
 }
