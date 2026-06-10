@@ -11,7 +11,6 @@ import com.example.clashcoding.utils.ResponseBody;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,15 +32,17 @@ public class QuestionController {
             Cookie[] cookies = request.getCookies();
 
             String email = null;
-            if (cookies != null) {
-                for (Cookie cookie : cookies) {
-                    if ("jwt".equalsIgnoreCase(cookie.getName())) {
-                        String token = cookie.getValue();
+            for (Cookie cookie : cookies) {
+                if ("jwt".equalsIgnoreCase(cookie.getName())) {
+                    String token = cookie.getValue();
 
-                        email = jwtUtils.extractEmail(token);
-                        break;
-                    }
+                    email = jwtUtils.extractEmail(token);
+                    break;
                 }
+            }
+
+            if (email == null) {
+                throw new ExceptionConfig("User is not authenticated");
             }
 
             dto.setEmail(email);
