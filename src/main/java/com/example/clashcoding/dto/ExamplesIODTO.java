@@ -8,7 +8,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ExamplesIODTO {
-    public String input;
-    public String output;
-    public String description;
+
+	public String input;
+	public String output;
+	public String description;
 }

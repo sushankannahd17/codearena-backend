@@ -7,108 +7,125 @@ import com.example.clashcoding.models.TestCase;
 import com.example.clashcoding.service.QuestionService;
 import com.example.clashcoding.utils.JwtUtils;
 import com.example.clashcoding.utils.ResponseBody;
-
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/questions")
 public class QuestionController {
-    @Autowired
-    private QuestionService service;
-    @Autowired
-    private JwtUtils jwtUtils;
 
-    @PostMapping("/create")
-    public ResponseEntity<?> createQuestion(@RequestBody QuestionDTO dto, HttpServletRequest request) {
-        try {
-            Cookie[] cookies = request.getCookies();
+	@Autowired
+	private QuestionService service;
 
-            Long id = null;
-            for (Cookie cookie : cookies) {
-                if ("jwt".equalsIgnoreCase(cookie.getName())) {
-                    String token = cookie.getValue();
+	@Autowired
+	private JwtUtils jwtUtils;
 
-                    id = Long.parseLong(jwtUtils.extractID(token));
-                    break;
-                }
-            }
+	@PostMapping("/create")
+	public ResponseEntity<?> createQuestion(@RequestBody QuestionDTO dto, HttpServletRequest request) {
+		try {
+			Cookie[] cookies = request.getCookies();
 
-            if (id == null) {
-                throw new ExceptionConfig("User is not authenticated");
-            }
+			Long id = null;
+			for (Cookie cookie : cookies) {
+				if ("jwt".equalsIgnoreCase(cookie.getName())) {
+					String token = cookie.getValue();
 
-            dto.setUserID(id);
+					id = Long.parseLong(jwtUtils.extractID(token));
+					break;
+				}
+			}
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseBody("success", "Question created. ID: " + service.createQuestion(dto)));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseBody("error", e.getMessage()));
-        }
-    }
+			if (id == null) {
+				throw new ExceptionConfig("User is not authenticated");
+			}
 
-    @PatchMapping("/{questionID}/testcases")
-    public ResponseEntity<?> modifyTestCases(@PathVariable Long questionID, @RequestBody List<TestCasesDTO> dto, HttpServletRequest request) {
-        try {
-            Cookie[] cookies = request.getCookies();
+			dto.setUserID(id);
 
-            Long id = null;
-            for (Cookie cookie : cookies) {
-                if ("jwt".equalsIgnoreCase(cookie.getName())) {
-                    String token = cookie.getValue();
+			return ResponseEntity
+				.status(HttpStatus.CREATED)
+				.body(new ResponseBody("success", "Question created. ID: " + service.createQuestion(dto)));
+		} catch (Exception e) {
+			return ResponseEntity
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ResponseBody("error", e.getMessage()));
+		}
+	}
 
-                    id = Long.parseLong(jwtUtils.extractID(token));
-                    break;
-                }
-            }
+	@PatchMapping("/{questionID}/testcases")
+	public ResponseEntity<?> modifyTestCases(
+		@PathVariable Long questionID,
+		@RequestBody List<TestCasesDTO> dto,
+		HttpServletRequest request
+	) {
+		try {
+			Cookie[] cookies = request.getCookies();
 
-            if (id == null) {
-                throw new ExceptionConfig("User is not authenticated");
-            }
+			Long id = null;
+			for (Cookie cookie : cookies) {
+				if ("jwt".equalsIgnoreCase(cookie.getName())) {
+					String token = cookie.getValue();
 
-            return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.modifyTestCases(questionID, dto, id)));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseBody("error", e.getMessage()));
-        }
-    }
+					id = Long.parseLong(jwtUtils.extractID(token));
+					break;
+				}
+			}
 
-    @DeleteMapping("/{questionID}")
-    public ResponseEntity<?> deleteQuestion(@PathVariable Long questionID, HttpServletRequest request) {
-        try {
-            Cookie[] cookies = request.getCookies();
+			if (id == null) {
+				throw new ExceptionConfig("User is not authenticated");
+			}
 
-            Long id = null;
-            for (Cookie cookie : cookies) {
-                if ("jwt".equalsIgnoreCase(cookie.getName())) {
-                    String token = cookie.getValue();
+			return ResponseEntity
+				.status(HttpStatus.OK)
+				.body(new ResponseBody("success", service.modifyTestCases(questionID, dto, id)));
+		} catch (Exception e) {
+			return ResponseEntity
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ResponseBody("error", e.getMessage()));
+		}
+	}
 
-                    id = Long.parseLong(jwtUtils.extractID(token));
-                    break;
-                }
-            }
+	@DeleteMapping("/{questionID}")
+	public ResponseEntity<?> deleteQuestion(@PathVariable Long questionID, HttpServletRequest request) {
+		try {
+			Cookie[] cookies = request.getCookies();
 
-            if (id == null) {
-                throw new ExceptionConfig("User is not authenticated");
-            }
+			Long id = null;
+			for (Cookie cookie : cookies) {
+				if ("jwt".equalsIgnoreCase(cookie.getName())) {
+					String token = cookie.getValue();
 
-            return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.deleteQuestion(questionID)));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseBody("error", e.getMessage()));
-        }
-    }
+					id = Long.parseLong(jwtUtils.extractID(token));
+					break;
+				}
+			}
 
-    @GetMapping("/get/{userID}")
-    public ResponseEntity<?> getQuestions(@PathVariable Long userID) {
-        try {
-            return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.getQuestions(userID)));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseBody("error", e.getMessage()));
-        }
-    }
+			if (id == null) {
+				throw new ExceptionConfig("User is not authenticated");
+			}
+
+			return ResponseEntity
+				.status(HttpStatus.OK)
+				.body(new ResponseBody("success", service.deleteQuestion(questionID)));
+		} catch (Exception e) {
+			return ResponseEntity
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ResponseBody("error", e.getMessage()));
+		}
+	}
+
+	@GetMapping("/get/{userID}")
+	public ResponseEntity<?> getQuestions(@PathVariable Long userID) {
+		try {
+			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.getQuestions(userID)));
+		} catch (Exception e) {
+			return ResponseEntity
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ResponseBody("error", e.getMessage()));
+		}
+	}
 }

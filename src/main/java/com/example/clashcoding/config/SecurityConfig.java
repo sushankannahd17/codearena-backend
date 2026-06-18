@@ -11,15 +11,21 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-    @Bean
-    public PasswordEncoder passwordEncoder() {return new BCryptPasswordEncoder();}
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.cors(cors -> {}).csrf(csrf -> csrf.disable()).authorizeHttpRequests(
-                auth -> auth.requestMatchers("/auth/**", "/error", "/questions/**").permitAll().anyRequest().authenticated()
-        );
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
 
-        return http.build();
-    }
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		http
+			.cors(cors -> {})
+			.csrf(csrf -> csrf.disable())
+			.authorizeHttpRequests(auth ->
+				auth.requestMatchers("/auth/**", "/error", "/questions/**").permitAll().anyRequest().authenticated()
+			);
+
+		return http.build();
+	}
 }

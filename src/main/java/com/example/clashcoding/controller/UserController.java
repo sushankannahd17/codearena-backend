@@ -4,7 +4,6 @@ import com.example.clashcoding.dto.UserDTO;
 import com.example.clashcoding.service.UserService;
 import com.example.clashcoding.utils.JwtUtils;
 import com.example.clashcoding.utils.ResponseBody;
-
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,39 +17,49 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/auth")
 public class UserController {
-    @Autowired
-    private UserService service;
 
-    @Autowired
-    private JwtUtils jwtUtils;
-    @PostMapping("/signup")
-    public ResponseEntity<?> signUp(@RequestBody UserDTO dto) {
-        try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseBody("success", service.signUp(dto)));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(new ResponseBody("error", e.getMessage()));
-        }
-    }
+	@Autowired
+	private UserService service;
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody UserDTO dto, HttpServletResponse response) {
-        try {
-            Long userID = service.login(dto);
+	@Autowired
+	private JwtUtils jwtUtils;
 
-            String token = jwtUtils.generateToken(userID);
+	@PostMapping("/signup")
+	public ResponseEntity<?> signUp(@RequestBody UserDTO dto) {
+		try {
+			return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseBody("success", service.signUp(dto)));
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.CONFLICT).body(new ResponseBody("error", e.getMessage()));
+		}
+	}
 
-            Cookie cookie = new Cookie("jwt", token);
-            cookie.setHttpOnly(true);
-            cookie.setSecure(true);
-            cookie.setPath("/");
-            cookie.setMaxAge(60 * 60 * 5);
+	@PostMapping("/login")
+	public ResponseEntity<?> login(@RequestBody UserDTO dto, HttpServletResponse response) {
+		try {
+			Long userID = service.login(dto);
 
-            response.addCookie(cookie);
+			String token = jwtUtils.generateToken(userID);
 
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(new ResponseBody("success", "User logged in successfully"));
-        } catch (Exception e) {
-            if (e.getMessage().equalsIgnoreCase("Incorrect Password") || e.getMessage().equalsIgnoreCase("User Does Not Exists")) return ResponseEntity.status(HttpStatus.CONFLICT).body(new ResponseBody("error", e.getMessage()));
-            else return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseBody("error", e.getMessage()));
-        }
-    }
+			Cookie cookie = new Cookie("jwt", token);
+			cookie.setHttpOnly(true);
+			cookie.setSecure(true);
+			cookie.setPath("/");
+			cookie.setMaxAge(60 * 60 * 5);
+
+			response.addCookie(cookie);
+
+			return ResponseEntity
+				.status(HttpStatus.ACCEPTED)
+				.body(new ResponseBody("success", "User logged in successfully"));
+		} catch (Exception e) {
+			if (
+				e.getMessage().equalsIgnoreCase("Incorrect Password") ||
+				e.getMessage().equalsIgnoreCase("User Does Not Exists")
+			) return ResponseEntity
+				.status(HttpStatus.CONFLICT)
+				.body(new ResponseBody("error", e.getMessage())); else return ResponseEntity
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ResponseBody("error", e.getMessage()));
+		}
+	}
 }

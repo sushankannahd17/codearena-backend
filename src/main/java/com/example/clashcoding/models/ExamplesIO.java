@@ -7,19 +7,20 @@ import lombok.Data;
 @Entity
 @Data
 public class ExamplesIO {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Long id;
 
-    @Column
-    public String input;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	public Long id;
 
-    @Column
-    public String output;
+	@Column
+	public String input;
 
-    public String description;
+	@Column
+	public String output;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "problem_id")
-    public Question question;
+	public String description;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "problem_id")
+	public Question question;
 }

@@ -10,13 +10,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserDTO {
-    @NotBlank(message = "Name is needed")
-    public String name;
 
-    @NotBlank(message = "Email is needed")
-    @Email(message = "Email should be valid")
-    public String email;
+	@NotBlank(message = "Name is needed")
+	public String name;
 
-    @NotBlank(message = "Password is needed")
-    public String password;
+	@NotBlank(message = "Email is needed")
+	@Email(message = "Email should be valid")
+	public String email;
+
+	@NotBlank(message = "Password is needed")
+	public String password;
 }

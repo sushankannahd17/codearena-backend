@@ -8,17 +8,18 @@ import lombok.Data;
 @Data
 @Table(name = "users")
 public class User {
-    @Id
-    @GeneratedValue
-    Long id;
 
-    @NotBlank
-    String name;
+	@Id
+	@GeneratedValue
+	Long id;
 
-    @NotBlank
-    @Column(unique = true)
-    String email;
+	@NotBlank
+	String name;
 
-    @NotBlank
-    String password;
+	@NotBlank
+	@Column(unique = true)
+	String email;
+
+	@NotBlank
+	String password;
 }

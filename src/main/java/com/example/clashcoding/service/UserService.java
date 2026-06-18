@@ -1,10 +1,9 @@
 package com.example.clashcoding.service;
 
 import com.example.clashcoding.config.ExceptionConfig;
+import com.example.clashcoding.dto.UserDTO;
 import com.example.clashcoding.models.User;
 import com.example.clashcoding.repository.UserRepository;
-import com.example.clashcoding.dto.UserDTO;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -12,43 +11,45 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
-    public String signUp(UserDTO dto) {
-        String email = dto.getEmail().trim().toLowerCase();
+	@Autowired
+	private UserRepository userRepository;
 
-        User user = userRepository.findByEmail(email);
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
-        if (user != null) {
-            throw new ExceptionConfig("User Already Exists");
-        }
+	public String signUp(UserDTO dto) {
+		String email = dto.getEmail().trim().toLowerCase();
 
-        User newUser = new User();
-        newUser.setName(dto.getName());
-        newUser.setEmail(email);
-        newUser.setPassword(passwordEncoder.encode(dto.getPassword()));
+		User user = userRepository.findByEmail(email);
 
-        userRepository.save(newUser);
+		if (user != null) {
+			throw new ExceptionConfig("User Already Exists");
+		}
 
-        return "User Signed Up Successfully";
-    }
+		User newUser = new User();
+		newUser.setName(dto.getName());
+		newUser.setEmail(email);
+		newUser.setPassword(passwordEncoder.encode(dto.getPassword()));
 
-    public Long login(UserDTO dto) {
-        String email = dto.getEmail().trim().toLowerCase();
+		userRepository.save(newUser);
 
-        User user = userRepository.findByEmail(email);
+		return "User Signed Up Successfully";
+	}
 
-        if (user == null) {
-            throw new ExceptionConfig("User Does Not Exists");
-        }
+	public Long login(UserDTO dto) {
+		String email = dto.getEmail().trim().toLowerCase();
 
-        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
-            throw new ExceptionConfig("Incorrect Password");
-        }
+		User user = userRepository.findByEmail(email);
 
-        return user.getId();
-    }
+		if (user == null) {
+			throw new ExceptionConfig("User Does Not Exists");
+		}
+
+		if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
+			throw new ExceptionConfig("Incorrect Password");
+		}
+
+		return user.getId();
+	}
 }

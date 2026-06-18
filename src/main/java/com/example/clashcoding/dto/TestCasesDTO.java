@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TestCasesDTO {
-    public String input;
-    public String output;
+
+	public String input;
+	public String output;
 }

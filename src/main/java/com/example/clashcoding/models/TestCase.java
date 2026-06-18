@@ -8,17 +8,18 @@ import lombok.Data;
 @Data
 @Table(name = "testcase")
 public class TestCase {
-    @Id
-    @GeneratedValue
-    public Long id;
 
-    @NotBlank
-    public String input;
+	@Id
+	@GeneratedValue
+	public Long id;
 
-    @NotBlank
-    public String output;
+	@NotBlank
+	public String input;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "problem_id")
-    public Question question;
+	@NotBlank
+	public String output;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "problem_id")
+	public Question question;
 }
