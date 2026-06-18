@@ -15,5 +15,5 @@ public class QuestionDTO {
     public String description;
     public List<ExamplesIODTO> examplesIO = new ArrayList<>();
     public List<TestCasesDTO> testcases = new ArrayList<>();
-    public String email;
+    public Long userID;
 }

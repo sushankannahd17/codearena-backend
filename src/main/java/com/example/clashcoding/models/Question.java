@@ -32,7 +32,7 @@ public class Question {
     public List<TestCase> tc = new ArrayList<>();
 
     @ManyToOne
-    @JoinColumn(name = "email", referencedColumnName = "email")
+    @JoinColumn(name = "userID", referencedColumnName = "id")
     public User user;
 
     @CreatedDate

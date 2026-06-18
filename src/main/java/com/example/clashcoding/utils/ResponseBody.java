@@ -7,5 +7,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class ResponseBody {
-    private String status, message;
+    private String status;
+    private Object message;
 }

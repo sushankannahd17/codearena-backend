@@ -37,7 +37,7 @@ public class UserController {
         try {
             Long userID = service.login(dto);
 
-            String token = jwtUtils.generateToken(dto.getEmail());
+            String token = jwtUtils.generateToken(userID);
 
             Cookie cookie = new Cookie("jwt", token);
             cookie.setHttpOnly(true);

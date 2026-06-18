@@ -16,11 +16,11 @@ public class JwtUtils {
     @Value("${security.expiryTime}")
     private long expiryTime;
 
-    public String generateToken(String email) {
-        return Jwts.builder().subject(email).issuedAt(new Date()).expiration(new Date(System.currentTimeMillis() + expiryTime)).signWith(Keys.hmacShaKeyFor(secretKey.getBytes())).compact();
+    public String generateToken(Long userID) {
+        return Jwts.builder().subject(String.valueOf(userID)).issuedAt(new Date()).expiration(new Date(System.currentTimeMillis() + expiryTime)).signWith(Keys.hmacShaKeyFor(secretKey.getBytes())).compact();
     }
 
-    public String extractEmail(String token) {
+    public String extractID(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(Keys.hmacShaKeyFor(secretKey.getBytes()))
                 .build()

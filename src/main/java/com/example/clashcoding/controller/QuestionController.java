@@ -31,21 +31,21 @@ public class QuestionController {
         try {
             Cookie[] cookies = request.getCookies();
 
-            String email = null;
+            Long id = null;
             for (Cookie cookie : cookies) {
                 if ("jwt".equalsIgnoreCase(cookie.getName())) {
                     String token = cookie.getValue();
 
-                    email = jwtUtils.extractEmail(token);
+                    id = Long.parseLong(jwtUtils.extractID(token));
                     break;
                 }
             }
 
-            if (email == null) {
+            if (id == null) {
                 throw new ExceptionConfig("User is not authenticated");
             }
 
-            dto.setEmail(email);
+            dto.setUserID(id);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseBody("success", "Question created. ID: " + service.createQuestion(dto)));
         } catch (Exception e) {
@@ -58,21 +58,21 @@ public class QuestionController {
         try {
             Cookie[] cookies = request.getCookies();
 
-            String email = null;
+            Long id = null;
             for (Cookie cookie : cookies) {
                 if ("jwt".equalsIgnoreCase(cookie.getName())) {
                     String token = cookie.getValue();
 
-                    email = jwtUtils.extractEmail(token);
+                    id = Long.parseLong(jwtUtils.extractID(token));
                     break;
                 }
             }
 
-            if (email == null) {
+            if (id == null) {
                 throw new ExceptionConfig("User is not authenticated");
             }
 
-            return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.modifyTestCases(questionID, dto, email)));
+            return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.modifyTestCases(questionID, dto, id)));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseBody("error", e.getMessage()));
         }
@@ -83,21 +83,30 @@ public class QuestionController {
         try {
             Cookie[] cookies = request.getCookies();
 
-            String email = null;
+            Long id = null;
             for (Cookie cookie : cookies) {
                 if ("jwt".equalsIgnoreCase(cookie.getName())) {
                     String token = cookie.getValue();
 
-                    email = jwtUtils.extractEmail(token);
+                    id = Long.parseLong(jwtUtils.extractID(token));
                     break;
                 }
             }
 
-            if (email == null) {
+            if (id == null) {
                 throw new ExceptionConfig("User is not authenticated");
             }
 
             return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.deleteQuestion(questionID)));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseBody("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/get/{userID}")
+    public ResponseEntity<?> getQuestions(@PathVariable Long userID) {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.getQuestions(userID)));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseBody("error", e.getMessage()));
         }

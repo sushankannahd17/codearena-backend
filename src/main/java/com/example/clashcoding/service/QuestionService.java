@@ -5,6 +5,7 @@ import java.util.List;
 import com.example.clashcoding.config.ExceptionConfig;
 import com.example.clashcoding.dto.ExamplesIODTO;
 import com.example.clashcoding.dto.QuestionDTO;
+import com.example.clashcoding.dto.QuestionResponseDTO;
 import com.example.clashcoding.dto.TestCasesDTO;
 import com.example.clashcoding.models.ExamplesIO;
 
@@ -28,7 +29,7 @@ public class QuestionService {
         Question question = new Question();
         question.setTitle(dto.getTitle());
         question.setDescription(dto.getDescription());
-        question.setUser(userRepository.findByEmail(dto.getEmail().trim().toLowerCase()));
+        question.setUser(userRepository.findById(dto.getUserID()).orElseThrow(() -> new ExceptionConfig("User not found")));
 
         for (ExamplesIODTO exampleDTO : dto.getExamplesIO()) {
             ExamplesIO examplesIO = new ExamplesIO();
@@ -52,10 +53,10 @@ public class QuestionService {
         return questionRepository.save(question).getId();
     }
 
-    public String modifyTestCases(Long questionID, List<TestCasesDTO> tcDTOList, String email) {
+    public String modifyTestCases(Long questionID, List<TestCasesDTO> tcDTOList, Long userID) {
         Question question = questionRepository.findById(questionID).orElseThrow(() -> new ExceptionConfig("Question not found"));
 
-        if (!question.getUser().getEmail().equalsIgnoreCase(email)) {
+        if (!(question.getUser().getId().equals(userID))) {
             throw new ExceptionConfig("User is not authorized");
         }
 
@@ -80,5 +81,11 @@ public class QuestionService {
         questionRepository.deleteById(questionID);
 
         return "Question deleted successfully";
+    }
+
+    public List<QuestionResponseDTO> getQuestions(Long id) {
+        List<Question> questionList = questionRepository.findAllByUser_Id(id);
+
+        return questionList.stream().map(q -> new QuestionResponseDTO(q.getId(), q.getTitle(), q.getDescription(), q.getExamples().stream().map(e -> new ExamplesIODTO(e.getInput(), e.getOutput(), e.getDescription())).toList(), q.getTc().stream().map(t -> new TestCasesDTO(t.getInput(), t.getOutput())).toList())).toList();
     }
 }
