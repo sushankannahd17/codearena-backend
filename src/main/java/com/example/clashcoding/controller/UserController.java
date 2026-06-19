@@ -1,5 +1,6 @@
 package com.example.clashcoding.controller;
 
+import com.example.clashcoding.dto.EmailDTO;
 import com.example.clashcoding.dto.UserDTO;
 import com.example.clashcoding.service.UserService;
 import com.example.clashcoding.utils.JwtUtils;
@@ -42,7 +43,7 @@ public class UserController {
 
 			Cookie cookie = new Cookie("jwt", token);
 			cookie.setHttpOnly(true);
-			cookie.setSecure(true);
+			cookie.setSecure(false);
 			cookie.setPath("/");
 			cookie.setMaxAge(60 * 60 * 5);
 
@@ -58,6 +59,21 @@ public class UserController {
 			) return ResponseEntity
 				.status(HttpStatus.CONFLICT)
 				.body(new ResponseBody("error", e.getMessage())); else return ResponseEntity
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ResponseBody("error", e.getMessage()));
+		}
+	}
+
+	@PostMapping("/sendOTP")
+	public ResponseEntity<?> sendOTP(@RequestBody EmailDTO dto) {
+		try {
+			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.sendOTP(dto)));
+		} catch (Exception e) {
+			if (e.getMessage().equals("User does not exist")) {
+				return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("error", e.getMessage()));
+			}
+
+			return ResponseEntity
 				.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(new ResponseBody("error", e.getMessage()));
 		}

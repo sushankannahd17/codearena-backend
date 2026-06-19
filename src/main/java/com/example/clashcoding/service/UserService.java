@@ -1,9 +1,11 @@
 package com.example.clashcoding.service;
 
 import com.example.clashcoding.config.ExceptionConfig;
+import com.example.clashcoding.dto.EmailDTO;
 import com.example.clashcoding.dto.UserDTO;
 import com.example.clashcoding.models.User;
 import com.example.clashcoding.repository.UserRepository;
+import com.example.clashcoding.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,6 +16,9 @@ public class UserService {
 
 	@Autowired
 	private UserRepository userRepository;
+
+	@Autowired
+	private EmailService service;
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
@@ -51,5 +56,17 @@ public class UserService {
 		}
 
 		return user.getId();
+	}
+
+	public String sendOTP(EmailDTO dto) {
+		String email = dto.getRecipient().trim().toLowerCase();
+
+		User user = userRepository.findByEmail(email);
+
+		if (user == null) {
+			throw new ExceptionConfig("User does not exist");
+		}
+
+		return service.sendMail(dto);
 	}
 }
