@@ -64,18 +64,39 @@ public class UserController {
 		}
 	}
 
-	@PostMapping("/sendOTP")
+	@PostMapping("/sendotp")
 	public ResponseEntity<?> sendOTP(@RequestBody EmailDTO dto) {
 		try {
-			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.sendOTP(dto)));
+			return ResponseEntity
+					.status(HttpStatus.OK)
+					.body(new ResponseBody("success", service.sendOTP(dto)));
 		} catch (Exception e) {
 			if (e.getMessage().equals("User does not exist")) {
-				return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("error", e.getMessage()));
+				return ResponseEntity
+						.status(HttpStatus.CONFLICT)
+						.body(new ResponseBody("error", e.getMessage()));
 			}
 
 			return ResponseEntity
 				.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(new ResponseBody("error", e.getMessage()));
+		}
+	}
+
+	@PostMapping("/changepassword")
+	public ResponseEntity<?> changePassword(@RequestBody EmailDTO dto) {
+		try {
+			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.changePassword(dto)));
+		} catch (Exception e) {
+			if (e.getMessage().equals("OTP is invalid")) {
+				return ResponseEntity
+						.status(HttpStatus.CONFLICT)
+						.body(new ResponseBody("error", e.getMessage()));
+			}
+
+			return ResponseEntity
+					.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(new ResponseBody("error", e.getMessage()));
 		}
 	}
 }

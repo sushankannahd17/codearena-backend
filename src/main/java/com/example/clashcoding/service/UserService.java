@@ -3,11 +3,17 @@ package com.example.clashcoding.service;
 import com.example.clashcoding.config.ExceptionConfig;
 import com.example.clashcoding.dto.EmailDTO;
 import com.example.clashcoding.dto.UserDTO;
+import com.example.clashcoding.models.OTP;
 import com.example.clashcoding.models.User;
+import com.example.clashcoding.repository.OTPRepository;
 import com.example.clashcoding.repository.UserRepository;
-import com.example.clashcoding.service.EmailService;
+import java.util.Random;
+
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,10 +24,16 @@ public class UserService {
 	private UserRepository userRepository;
 
 	@Autowired
-	private EmailService service;
+	private OTPRepository otpRepository;
+
+	@Autowired
+	private JavaMailSender javaMailSender;
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+
+	@Value("${spring.mail.username}")
+	private String sender;
 
 	public String signUp(UserDTO dto) {
 		String email = dto.getEmail().trim().toLowerCase();
@@ -58,6 +70,7 @@ public class UserService {
 		return user.getId();
 	}
 
+	@Transactional
 	public String sendOTP(EmailDTO dto) {
 		String email = dto.getRecipient().trim().toLowerCase();
 
@@ -67,6 +80,49 @@ public class UserService {
 			throw new ExceptionConfig("User does not exist");
 		}
 
-		return service.sendMail(dto);
+		otpRepository.deleteAllByEmail(email);
+
+		SimpleMailMessage mail = new SimpleMailMessage();
+
+		mail.setFrom(sender);
+		mail.setTo(dto.getRecipient());
+		mail.setSubject("Code for resetting the password");
+
+		Random r = new Random();
+		int val = r.nextInt(1000000, 10000000);
+		mail.setText("Your OTP is " + val + "\nUse this to reset your password");
+
+		javaMailSender.send(mail);
+
+		OTP otp = new OTP();
+		otp.setEmail(email);
+		otp.setOtp(val);
+
+		otpRepository.save(otp);
+
+		return ("Mail sent successfully to " + dto.getRecipient());
+	}
+
+	@Transactional
+	public String changePassword(EmailDTO dto) {
+		String email = dto.getRecipient().trim().toLowerCase();
+
+		OTP otp = otpRepository.findAllByEmail(email);
+
+		if (dto.getOtp() != otp.getOtp()) {
+			throw new ExceptionConfig("OTP is invalid");
+		}
+
+		OTP oldOtp = otpRepository.findAllByEmail(email);
+		if (oldOtp != null) {
+			otpRepository.delete(oldOtp);
+		}
+
+		User user = userRepository.findByEmail(email);
+
+		user.setPassword(passwordEncoder.encode(dto.getPassword()));
+		userRepository.save(user);
+
+		return "Password changed successfully";
 	}
 }
