@@ -118,10 +118,27 @@ public class QuestionController {
 		}
 	}
 
-	@GetMapping("/get/{userID}")
-	public ResponseEntity<?> getQuestions(@PathVariable Long userID) {
+	@GetMapping("/get")
+	public ResponseEntity<?> getQuestions(HttpServletRequest request) {
 		try {
-			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.getQuestions(userID)));
+			Cookie[] cookies = request.getCookies();
+
+			Long id = null;
+
+			for (Cookie cookie : cookies) {
+				if ("jwt".equalsIgnoreCase(cookie.getName())) {
+					String token = cookie.getValue();
+
+					id = Long.parseLong(jwtUtils.extractID(token));
+					break;
+				}
+			}
+
+			if (id == null) {
+				throw new ExceptionConfig("User is not authenticated");
+			}
+
+			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.getQuestions(id)));
 		} catch (Exception e) {
 			return ResponseEntity
 				.status(HttpStatus.INTERNAL_SERVER_ERROR)

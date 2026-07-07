@@ -1,5 +1,6 @@
 package com.example.clashcoding.models;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import java.time.Instant;
@@ -26,9 +27,11 @@ public class Question {
 	public String description;
 
 	@OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
 	public List<ExamplesIO> examples = new ArrayList<>();
 
 	@OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
 	public List<TestCase> tc = new ArrayList<>();
 
 	@ManyToOne

@@ -1,5 +1,6 @@
 package com.example.clashcoding.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -21,5 +22,6 @@ public class TestCase {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "problem_id")
+	@JsonBackReference
 	public Question question;
 }
