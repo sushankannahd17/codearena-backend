@@ -27,11 +27,11 @@ public class Question {
 	public String description;
 
 	@OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
+	@JsonManagedReference
 	public List<ExamplesIO> examples = new ArrayList<>();
 
 	@OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
+	@JsonManagedReference
 	public List<TestCase> tc = new ArrayList<>();
 
 	@ManyToOne

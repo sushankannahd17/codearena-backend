@@ -12,13 +12,14 @@ import lombok.Data;
 @Data
 @Table(name = "otp")
 public class OTP {
-    @Id
-    @GeneratedValue
-    public Long id;
 
-    @NotBlank
-    public String email;
+	@Id
+	@GeneratedValue
+	public Long id;
 
-    @NotNull
-    public Integer otp;
+	@NotBlank
+	public String email;
+
+	@NotNull
+	public Integer otp;
 }

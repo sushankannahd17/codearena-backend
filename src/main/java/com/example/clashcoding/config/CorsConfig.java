@@ -1,7 +1,6 @@
 package com.example.clashcoding.config;
 
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,8 +10,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 public class CorsConfig {
-    @Value("${client.url}")
-    private String clientURL;
+
+	@Value("${client.url}")
+	private String clientURL;
 
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {

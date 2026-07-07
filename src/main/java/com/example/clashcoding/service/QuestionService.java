@@ -28,7 +28,7 @@ public class QuestionService {
 		question.setTitle(dto.getTitle());
 		question.setDescription(dto.getDescription());
 		question.setUser(
-			userRepository.findById(dto.getUserID()).orElseThrow(() -> new ExceptionConfig("User not found"))
+			userRepository.findById(dto.getUserID()).orElseThrow(() -> new ExceptionConfig("User is not found"))
 		);
 
 		for (ExamplesIODTO exampleDTO : dto.getExamplesIO()) {
@@ -77,10 +77,12 @@ public class QuestionService {
 		return "TestCases Updated Successfully";
 	}
 
-	public String deleteQuestion(Long questionID) {
+	public String deleteQuestion(Long questionID, Long userID) {
 		Question question = questionRepository
 			.findById(questionID)
 			.orElseThrow(() -> new ExceptionConfig("Question not found"));
+
+		if (!(question.getUser().getId().equals(userID))) throw new ExceptionConfig("User is not authorized");
 
 		questionRepository.deleteById(questionID);
 

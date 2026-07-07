@@ -95,6 +95,4 @@ public class ContestController {
 				.body(new ResponseBody("error", e.getMessage()));
 		}
 	}
-
-
 }

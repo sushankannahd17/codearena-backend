@@ -50,6 +50,12 @@ public class QuestionController {
 				.status(HttpStatus.CREATED)
 				.body(new ResponseBody("success", "Question created. ID: " + service.createQuestion(dto)));
 		} catch (Exception e) {
+			if (e.getMessage().equals("User is not authenticated")) {
+				return ResponseEntity
+						.status(HttpStatus.UNAUTHORIZED)
+						.body(new ResponseBody("error", e.getMessage()));
+			}
+
 			return ResponseEntity
 				.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(new ResponseBody("error", e.getMessage()));
@@ -83,6 +89,12 @@ public class QuestionController {
 				.status(HttpStatus.OK)
 				.body(new ResponseBody("success", service.modifyTestCases(questionID, dto, id)));
 		} catch (Exception e) {
+			if (e.getMessage().equals("User is not authenticated") || e.getMessage().equals("User is not authorized")) {
+				return ResponseEntity
+						.status(HttpStatus.UNAUTHORIZED)
+						.body(new ResponseBody("error", e.getMessage()));
+			}
+
 			return ResponseEntity
 				.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(new ResponseBody("error", e.getMessage()));
@@ -110,8 +122,12 @@ public class QuestionController {
 
 			return ResponseEntity
 				.status(HttpStatus.OK)
-				.body(new ResponseBody("success", service.deleteQuestion(questionID)));
+				.body(new ResponseBody("success", service.deleteQuestion(questionID, id)));
 		} catch (Exception e) {
+			if (e.getMessage().equals("User is not authenticated") || e.getMessage().equals("User is not authorized")) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ResponseBody("error", e.getMessage()));
+			}
+
 			return ResponseEntity
 				.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(new ResponseBody("error", e.getMessage()));
@@ -140,6 +156,12 @@ public class QuestionController {
 
 			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.getQuestions(id)));
 		} catch (Exception e) {
+			if (e.getMessage().equals("User is not authenticated")) {
+				return ResponseEntity
+						.status(HttpStatus.UNAUTHORIZED)
+						.body(new ResponseBody("error", e.getMessage()));
+			}
+
 			return ResponseEntity
 				.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(new ResponseBody("error", e.getMessage()));

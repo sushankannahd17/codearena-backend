@@ -7,9 +7,8 @@ import com.example.clashcoding.models.OTP;
 import com.example.clashcoding.models.User;
 import com.example.clashcoding.repository.OTPRepository;
 import com.example.clashcoding.repository.UserRepository;
-import java.util.Random;
-
 import jakarta.transaction.Transactional;
+import java.util.Random;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -124,5 +123,13 @@ public class UserService {
 		userRepository.save(user);
 
 		return "Password changed successfully";
+	}
+
+	public Iterable<User> getUsers() {
+		return userRepository.findAll();
+	}
+
+	public User getProfile(Long userID) {
+		return userRepository.findById(userID).orElseThrow();
 	}
 }
