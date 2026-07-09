@@ -1,11 +1,13 @@
 package com.example.clashcoding.controller;
 
+import com.example.clashcoding.config.ExceptionConfig;
 import com.example.clashcoding.dto.EmailDTO;
 import com.example.clashcoding.dto.UserDTO;
 import com.example.clashcoding.service.UserService;
 import com.example.clashcoding.utils.JwtUtils;
 import com.example.clashcoding.utils.ResponseBody;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -93,13 +95,60 @@ public class UserController {
 	}
 
 	@GetMapping("/all")
-	public ResponseEntity<?> getAllUsers() {
+	public ResponseEntity<?> getAllUsers(HttpServletRequest request) {
 		try {
-			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.getUsers()));
+			Cookie[] cookies = request.getCookies();
+
+			Long id = null;
+			for (Cookie cookie : cookies) {
+				if ("jwt".equalsIgnoreCase(cookie.getName())) {
+					String token = cookie.getValue();
+
+					id = Long.parseLong(jwtUtils.extractID(token));
+					break;
+				}
+			}
+
+			if (id == null) {
+				throw new ExceptionConfig("User is not authenticated");
+			}
+
+			return ResponseEntity
+					.status(HttpStatus.OK)
+					.body(new ResponseBody("success", service.getUsers(id)));
 		} catch (Exception e) {
 			return ResponseEntity
 				.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(new ResponseBody("error", e.getMessage()));
+		}
+	}
+
+	@GetMapping("/getProfile")
+	public ResponseEntity<?> getProfile(HttpServletRequest request) {
+		try {
+			Cookie[] cookies = request.getCookies();
+
+			Long id = null;
+			for (Cookie cookie : cookies) {
+				if ("jwt".equalsIgnoreCase(cookie.getName())) {
+					id = Long.parseLong(jwtUtils.extractID(cookie.getValue()));
+					break;
+				}
+			}
+
+			if (id == null) throw new ExceptionConfig("User is not authenticated");
+
+			return ResponseEntity
+					.status(HttpStatus.OK)
+					.body(new ResponseBody("success", service.getProfile(id)));
+		} catch (Exception e) {
+			if (e.getMessage().equals("User is not authenticated")) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ResponseBody("error", e.getMessage()));
+			}
+
+			return ResponseEntity
+					.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(new ResponseBody("error", e.getMessage()));
 		}
 	}
 }

@@ -125,8 +125,8 @@ public class UserService {
 		return "Password changed successfully";
 	}
 
-	public Iterable<User> getUsers() {
-		return userRepository.findAll();
+	public Iterable<User> getUsers(Long userID) {
+		return userRepository.findAllByIdNot(userID);
 	}
 
 	public User getProfile(Long userID) {

@@ -95,4 +95,34 @@ public class ContestController {
 				.body(new ResponseBody("error", e.getMessage()));
 		}
 	}
+
+		@DeleteMapping("/deletecontest/{contestID}")
+	public ResponseEntity<?> deleteContest(HttpServletRequest request,@PathVariable Long contestID) {
+		try {
+			Cookie[] cookies = request.getCookies();
+
+			Long id = null;
+			for (Cookie cookie : cookies) {
+				if ("jwt".equalsIgnoreCase(cookie.getName())) {
+					id = Long.parseLong(jwtUtils.extractID(cookie.getValue()));
+				}
+			}
+
+			if (id == null) {
+				throw new ExceptionConfig("User is not authenticated");
+			}
+
+			return ResponseEntity
+					.status(HttpStatus.OK)
+					.body(new ResponseBody("success", service.deleteContest(id, contestID)));
+		} catch (Exception e) {
+			if (e.getMessage().equals("User is not authenticated") || e.getMessage().equals("User is not authorized")) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ResponseBody("error", e.getMessage()));
+			}
+
+			return ResponseEntity
+					.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(new ResponseBody("error", e.getMessage()));
+		}
+	}
 }

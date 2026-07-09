@@ -1,5 +1,6 @@
 package com.example.clashcoding.service;
 
+import com.example.clashcoding.config.ExceptionConfig;
 import com.example.clashcoding.dto.ContestDTO;
 import com.example.clashcoding.models.Contest;
 import com.example.clashcoding.models.Question;
@@ -52,5 +53,16 @@ public class ContestService {
 		List<Contest> contests = contestRepository.findContestByAttenders_Id(userID);
 
 		return contests;
+	}
+
+	public String deleteContest(Long userID, Long questionID) {
+		Contest contest = contestRepository.findById(questionID).orElseThrow();
+
+		if (!contest.getUser().getId().equals(userID)) {
+			throw new ExceptionConfig("User is not authorized");
+		}
+
+		contestRepository.deleteById(questionID);
+		return "Contest deleted successfully";
 	}
 }
