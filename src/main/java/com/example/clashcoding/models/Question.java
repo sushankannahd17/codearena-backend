@@ -23,7 +23,7 @@ public class Question {
 	public String title;
 
 	@NotBlank
-	@Column
+	@Column(length = 10000)
 	public String description;
 
 	@OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)

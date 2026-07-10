@@ -19,4 +19,9 @@ public class ContestDTO {
 	private Long minutes;
 	private Instant startDate;
 	private Instant endDate;
+
+	ContestDTO(List<Long> questionID, List<Long> attenderID) {
+		this.questionID = questionID;
+		this.attenderID = attenderID;
+	}
 }

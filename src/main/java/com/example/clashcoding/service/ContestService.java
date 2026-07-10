@@ -65,4 +65,25 @@ public class ContestService {
 		contestRepository.deleteById(questionID);
 		return "Contest deleted successfully";
 	}
+
+	public String modifyQuestions(Long contestID, Long userID, ContestDTO dto) {
+		Contest contest = contestRepository.findById(contestID).orElseThrow();
+
+		if (!contest.getUser().getId().equals(userID)) throw new ExceptionConfig("User is not authorized");
+
+		contest.getQuestions().clear();
+		contest.getAttenders().clear();
+		for (Long id : dto.getQuestionID()) {
+			Question question = questionRepository.findById(id).orElseThrow();
+			contest.getQuestions().add(question);
+		}
+
+		for (Long id : dto.getAttenderID()) {
+			User user = userRepository.findById(id).orElseThrow();
+			contest.getAttenders().add(user);
+		}
+
+		contestRepository.save(contest);
+		return "Contest modified successfully";
+	}
 }

@@ -3,6 +3,7 @@ package com.example.clashcoding.controller;
 import com.example.clashcoding.config.ExceptionConfig;
 import com.example.clashcoding.dto.ContestDTO;
 import com.example.clashcoding.service.ContestService;
+import com.example.clashcoding.utils.GetID;
 import com.example.clashcoding.utils.JwtUtils;
 import com.example.clashcoding.utils.ResponseBody;
 import jakarta.servlet.http.Cookie;
@@ -18,6 +19,9 @@ public class ContestController {
 
 	@Autowired
 	private ContestService service;
+
+	@Autowired
+	private GetID getID;
 
 	@Autowired
 	private JwtUtils jwtUtils;
@@ -96,8 +100,8 @@ public class ContestController {
 		}
 	}
 
-		@DeleteMapping("/deletecontest/{contestID}")
-	public ResponseEntity<?> deleteContest(HttpServletRequest request,@PathVariable Long contestID) {
+	@DeleteMapping("/deletecontest/{contestID}")
+	public ResponseEntity<?> deleteContest(HttpServletRequest request, @PathVariable Long contestID) {
 		try {
 			Cookie[] cookies = request.getCookies();
 
@@ -113,16 +117,39 @@ public class ContestController {
 			}
 
 			return ResponseEntity
-					.status(HttpStatus.OK)
-					.body(new ResponseBody("success", service.deleteContest(id, contestID)));
+				.status(HttpStatus.OK)
+				.body(new ResponseBody("success", service.deleteContest(id, contestID)));
 		} catch (Exception e) {
 			if (e.getMessage().equals("User is not authenticated") || e.getMessage().equals("User is not authorized")) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ResponseBody("error", e.getMessage()));
 			}
 
 			return ResponseEntity
-					.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body(new ResponseBody("error", e.getMessage()));
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ResponseBody("error", e.getMessage()));
+		}
+	}
+
+	@PatchMapping("/modify/{contestID}")
+	public ResponseEntity<?> modifyQuestions(
+		@PathVariable Long contestID,
+		HttpServletRequest request,
+		@RequestBody ContestDTO dto
+	) {
+		try {
+			Long id = getID.getId(request);
+
+			return ResponseEntity
+				.status(HttpStatus.OK)
+				.body(new ResponseBody("success", service.modifyQuestions(contestID, id, dto)));
+		} catch (Exception e) {
+			if (e.getMessage().equals("User is not authenticated") || e.getMessage().equals("User is not authorized")) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ResponseBody("error", e.getMessage()));
+			}
+
+			return ResponseEntity
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ResponseBody("error", e.getMessage()));
 		}
 	}
 }
