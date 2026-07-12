@@ -4,6 +4,7 @@ import com.example.clashcoding.config.ExceptionConfig;
 import com.example.clashcoding.dto.EmailDTO;
 import com.example.clashcoding.dto.UserDTO;
 import com.example.clashcoding.service.UserService;
+import com.example.clashcoding.utils.GetID;
 import com.example.clashcoding.utils.JwtUtils;
 import com.example.clashcoding.utils.ResponseBody;
 import jakarta.servlet.http.Cookie;
@@ -21,6 +22,9 @@ public class UserController {
 
 	@Autowired
 	private UserService service;
+
+	@Autowired
+	private GetID getID;
 
 	@Autowired
 	private JwtUtils jwtUtils;
@@ -97,25 +101,9 @@ public class UserController {
 	@GetMapping("/all")
 	public ResponseEntity<?> getAllUsers(HttpServletRequest request) {
 		try {
-			Cookie[] cookies = request.getCookies();
+			Long id = getID.getId(request);
 
-			Long id = null;
-			for (Cookie cookie : cookies) {
-				if ("jwt".equalsIgnoreCase(cookie.getName())) {
-					String token = cookie.getValue();
-
-					id = Long.parseLong(jwtUtils.extractID(token));
-					break;
-				}
-			}
-
-			if (id == null) {
-				throw new ExceptionConfig("User is not authenticated");
-			}
-
-			return ResponseEntity
-					.status(HttpStatus.OK)
-					.body(new ResponseBody("success", service.getUsers(id)));
+			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.getUsers(id)));
 		} catch (Exception e) {
 			return ResponseEntity
 				.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -126,29 +114,36 @@ public class UserController {
 	@GetMapping("/getProfile")
 	public ResponseEntity<?> getProfile(HttpServletRequest request) {
 		try {
-			Cookie[] cookies = request.getCookies();
+			Long id = getID.getId(request);
 
-			Long id = null;
-			for (Cookie cookie : cookies) {
-				if ("jwt".equalsIgnoreCase(cookie.getName())) {
-					id = Long.parseLong(jwtUtils.extractID(cookie.getValue()));
-					break;
-				}
-			}
-
-			if (id == null) throw new ExceptionConfig("User is not authenticated");
-
-			return ResponseEntity
-					.status(HttpStatus.OK)
-					.body(new ResponseBody("success", service.getProfile(id)));
+			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.getProfile(id)));
 		} catch (Exception e) {
 			if (e.getMessage().equals("User is not authenticated")) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ResponseBody("error", e.getMessage()));
 			}
 
 			return ResponseEntity
-					.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body(new ResponseBody("error", e.getMessage()));
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ResponseBody("error", e.getMessage()));
+		}
+	}
+
+	@PostMapping("/logout")
+	public ResponseEntity<?> logout(HttpServletResponse response) {
+		try {
+			Cookie cookie = new Cookie("jwt", "");
+			cookie.setHttpOnly(true);
+			cookie.setSecure(false);
+			cookie.setPath("/");
+			cookie.setMaxAge(0);
+
+			response.addCookie(cookie);
+
+			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", "Logged out successfully"));
+		} catch (Exception e) {
+			return ResponseEntity
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ResponseBody("error", e.getMessage()));
 		}
 	}
 }

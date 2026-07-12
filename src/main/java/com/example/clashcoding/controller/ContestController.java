@@ -2,6 +2,7 @@ package com.example.clashcoding.controller;
 
 import com.example.clashcoding.config.ExceptionConfig;
 import com.example.clashcoding.dto.ContestDTO;
+import com.example.clashcoding.dto.SubmitDTO;
 import com.example.clashcoding.service.ContestService;
 import com.example.clashcoding.utils.GetID;
 import com.example.clashcoding.utils.JwtUtils;
@@ -29,127 +30,124 @@ public class ContestController {
 	@PostMapping("/create")
 	public ResponseEntity<?> createContest(@RequestBody ContestDTO dto, HttpServletRequest request) {
 		try {
-			Cookie[] cookies = request.getCookies();
-			Long id = null;
-
-			for (Cookie cookie : cookies) {
-				if ("jwt".equalsIgnoreCase(cookie.getName())) {
-					id = Long.parseLong(jwtUtils.extractID(cookie.getValue()));
-					break;
-				}
-			}
-
-			if (id == null) {
-				throw new ExceptionConfig("User is not authenticated");
-			}
+			Long id = getID.getId(request);
 
 			return ResponseEntity
-				.status(HttpStatus.CREATED)
-				.body(new ResponseBody("success", service.createContest(dto, id)));
+					.status(HttpStatus.CREATED)
+					.body(new ResponseBody("success", service.createContest(dto, id)));
 		} catch (Exception e) {
 			return ResponseEntity
-				.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.body(new ResponseBody("error", e.getMessage()));
+					.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(new ResponseBody("error", e.getMessage()));
 		}
 	}
 
 	@GetMapping("/getcreatedcontests")
 	public ResponseEntity<?> getContests(HttpServletRequest request) {
 		try {
-			Cookie[] cookies = request.getCookies();
-			Long id = null;
-
-			for (Cookie cookie : cookies) {
-				if ("jwt".equalsIgnoreCase(cookie.getName())) {
-					id = Long.parseLong(jwtUtils.extractID(cookie.getValue()));
-					break;
-				}
-			}
-
-			if (id == null) {
-				throw new ExceptionConfig("User is not authenticated");
-			}
+			Long id = getID.getId(request);
 
 			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.getContests(id)));
 		} catch (Exception e) {
 			return ResponseEntity
-				.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.body(new ResponseBody("error", e.getMessage()));
+					.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(new ResponseBody("error", e.getMessage()));
 		}
 	}
 
 	@GetMapping("/viewavailablecontests")
 	public ResponseEntity<?> viewAvailableContests(HttpServletRequest request) {
 		try {
-			Cookie[] cookies = request.getCookies();
-
-			Long id = null;
-			for (Cookie cookie : cookies) {
-				if ("jwt".equalsIgnoreCase(cookie.getName())) {
-					id = Long.parseLong(jwtUtils.extractID(cookie.getValue()));
-				}
-			}
+			Long id = getID.getId(request);
 
 			return ResponseEntity
-				.status(HttpStatus.OK)
-				.body(new ResponseBody("success", service.viewAvailableContests(id)));
+					.status(HttpStatus.OK)
+					.body(new ResponseBody("success", service.viewAvailableContests(id)));
 		} catch (Exception e) {
 			return ResponseEntity
-				.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.body(new ResponseBody("error", e.getMessage()));
+					.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(new ResponseBody("error", e.getMessage()));
 		}
 	}
 
 	@DeleteMapping("/deletecontest/{contestID}")
 	public ResponseEntity<?> deleteContest(HttpServletRequest request, @PathVariable Long contestID) {
 		try {
-			Cookie[] cookies = request.getCookies();
-
-			Long id = null;
-			for (Cookie cookie : cookies) {
-				if ("jwt".equalsIgnoreCase(cookie.getName())) {
-					id = Long.parseLong(jwtUtils.extractID(cookie.getValue()));
-				}
-			}
-
-			if (id == null) {
-				throw new ExceptionConfig("User is not authenticated");
-			}
+			Long id = getID.getId(request);
 
 			return ResponseEntity
-				.status(HttpStatus.OK)
-				.body(new ResponseBody("success", service.deleteContest(id, contestID)));
+					.status(HttpStatus.OK)
+					.body(new ResponseBody("success", service.deleteContest(id, contestID)));
 		} catch (Exception e) {
 			if (e.getMessage().equals("User is not authenticated") || e.getMessage().equals("User is not authorized")) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ResponseBody("error", e.getMessage()));
 			}
 
 			return ResponseEntity
-				.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.body(new ResponseBody("error", e.getMessage()));
+					.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(new ResponseBody("error", e.getMessage()));
 		}
 	}
 
 	@PatchMapping("/modify/{contestID}")
 	public ResponseEntity<?> modifyQuestions(
-		@PathVariable Long contestID,
-		HttpServletRequest request,
-		@RequestBody ContestDTO dto
+			@PathVariable Long contestID,
+			HttpServletRequest request,
+			@RequestBody ContestDTO dto
 	) {
 		try {
 			Long id = getID.getId(request);
 
 			return ResponseEntity
-				.status(HttpStatus.OK)
-				.body(new ResponseBody("success", service.modifyQuestions(contestID, id, dto)));
+					.status(HttpStatus.OK)
+					.body(new ResponseBody("success", service.modifyQuestions(contestID, id, dto)));
 		} catch (Exception e) {
 			if (e.getMessage().equals("User is not authenticated") || e.getMessage().equals("User is not authorized")) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ResponseBody("error", e.getMessage()));
 			}
 
 			return ResponseEntity
-				.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.body(new ResponseBody("error", e.getMessage()));
+					.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(new ResponseBody("error", e.getMessage()));
+		}
+	}
+
+	@GetMapping("/{contestID}")
+	public ResponseEntity<?> contestDetails(@PathVariable Long contestID, HttpServletRequest request) {
+		try {
+			Long userID = getID.getId(request);
+
+			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.getContest(contestID, userID	)));
+		} catch (Exception e) {
+			return ResponseEntity
+					.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(new ResponseBody("error", e.getMessage()));
+		}
+	}
+
+	@PostMapping("/{contestID}/entercontest")
+	public ResponseEntity<?> validateAndEnter(@PathVariable Long contestID, HttpServletRequest request) {
+		try {
+			Long userID = getID.getId(request);
+
+			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.validateAndEnter(contestID, userID)));
+		} catch (Exception e) {
+			return ResponseEntity
+					.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(new ResponseBody("error", e.getMessage()));
+		}
+	}
+
+	@PostMapping("/{contestID}/execute")
+	public ResponseEntity<?> executeCode(@PathVariable Long contestID, HttpServletRequest request, @RequestBody SubmitDTO dto) {
+		try {
+			Long userID = getID.getId(request);
+
+			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.submitCode(dto.getCode(), userID, contestID, dto.getQuestionID(), dto.getLanguage())));
+		} catch (Exception e) {
+			return ResponseEntity
+					.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(new ResponseBody("error", e.getMessage()));
 		}
 	}
 }

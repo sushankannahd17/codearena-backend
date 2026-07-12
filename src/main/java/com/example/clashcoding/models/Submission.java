@@ -13,8 +13,12 @@ public class Submission {
 	public long id;
 
 	@OneToOne
+	@JoinColumn(name = "contest_id")
+	public Contest contest;
+
+	@OneToOne
 	@JoinColumn(name = "question_id")
-	public Question questionID;
+	public Question question;
 
 	@ManyToOne
 	@JoinColumn(name = "user_id")

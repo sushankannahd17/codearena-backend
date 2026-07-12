@@ -5,6 +5,7 @@ import com.example.clashcoding.dto.QuestionDTO;
 import com.example.clashcoding.dto.TestCasesDTO;
 import com.example.clashcoding.models.TestCase;
 import com.example.clashcoding.service.QuestionService;
+import com.example.clashcoding.utils.GetID;
 import com.example.clashcoding.utils.JwtUtils;
 import com.example.clashcoding.utils.ResponseBody;
 import jakarta.servlet.http.Cookie;
@@ -20,6 +21,9 @@ import org.springframework.web.bind.annotation.*;
 public class QuestionController {
 
 	@Autowired
+	private GetID getID;
+
+	@Autowired
 	private QuestionService service;
 
 	@Autowired
@@ -28,21 +32,7 @@ public class QuestionController {
 	@PostMapping("/create")
 	public ResponseEntity<?> createQuestion(@RequestBody QuestionDTO dto, HttpServletRequest request) {
 		try {
-			Cookie[] cookies = request.getCookies();
-
-			Long id = null;
-			for (Cookie cookie : cookies) {
-				if ("jwt".equalsIgnoreCase(cookie.getName())) {
-					String token = cookie.getValue();
-
-					id = Long.parseLong(jwtUtils.extractID(token));
-					break;
-				}
-			}
-
-			if (id == null) {
-				throw new ExceptionConfig("User is not authenticated");
-			}
+			Long id = getID.getId(request);
 
 			dto.setUserID(id);
 
@@ -51,9 +41,7 @@ public class QuestionController {
 				.body(new ResponseBody("success", "Question created. ID: " + service.createQuestion(dto)));
 		} catch (Exception e) {
 			if (e.getMessage().equals("User is not authenticated")) {
-				return ResponseEntity
-						.status(HttpStatus.UNAUTHORIZED)
-						.body(new ResponseBody("error", e.getMessage()));
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ResponseBody("error", e.getMessage()));
 			}
 
 			return ResponseEntity
@@ -69,30 +57,14 @@ public class QuestionController {
 		HttpServletRequest request
 	) {
 		try {
-			Cookie[] cookies = request.getCookies();
-
-			Long id = null;
-			for (Cookie cookie : cookies) {
-				if ("jwt".equalsIgnoreCase(cookie.getName())) {
-					String token = cookie.getValue();
-
-					id = Long.parseLong(jwtUtils.extractID(token));
-					break;
-				}
-			}
-
-			if (id == null) {
-				throw new ExceptionConfig("User is not authenticated");
-			}
+			Long id = getID.getId(request);
 
 			return ResponseEntity
 				.status(HttpStatus.OK)
 				.body(new ResponseBody("success", service.modifyTestCases(questionID, dto, id)));
 		} catch (Exception e) {
 			if (e.getMessage().equals("User is not authenticated") || e.getMessage().equals("User is not authorized")) {
-				return ResponseEntity
-						.status(HttpStatus.UNAUTHORIZED)
-						.body(new ResponseBody("error", e.getMessage()));
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ResponseBody("error", e.getMessage()));
 			}
 
 			return ResponseEntity
@@ -104,21 +76,7 @@ public class QuestionController {
 	@DeleteMapping("/{questionID}")
 	public ResponseEntity<?> deleteQuestion(@PathVariable Long questionID, HttpServletRequest request) {
 		try {
-			Cookie[] cookies = request.getCookies();
-
-			Long id = null;
-			for (Cookie cookie : cookies) {
-				if ("jwt".equalsIgnoreCase(cookie.getName())) {
-					String token = cookie.getValue();
-
-					id = Long.parseLong(jwtUtils.extractID(token));
-					break;
-				}
-			}
-
-			if (id == null) {
-				throw new ExceptionConfig("User is not authenticated");
-			}
+			Long id = getID.getId(request);
 
 			return ResponseEntity
 				.status(HttpStatus.OK)
@@ -137,29 +95,12 @@ public class QuestionController {
 	@GetMapping("/get")
 	public ResponseEntity<?> getQuestions(HttpServletRequest request) {
 		try {
-			Cookie[] cookies = request.getCookies();
-
-			Long id = null;
-
-			for (Cookie cookie : cookies) {
-				if ("jwt".equalsIgnoreCase(cookie.getName())) {
-					String token = cookie.getValue();
-
-					id = Long.parseLong(jwtUtils.extractID(token));
-					break;
-				}
-			}
-
-			if (id == null) {
-				throw new ExceptionConfig("User is not authenticated");
-			}
+			Long id = getID.getId(request);
 
 			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.getQuestions(id)));
 		} catch (Exception e) {
 			if (e.getMessage().equals("User is not authenticated")) {
-				return ResponseEntity
-						.status(HttpStatus.UNAUTHORIZED)
-						.body(new ResponseBody("error", e.getMessage()));
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ResponseBody("error", e.getMessage()));
 			}
 
 			return ResponseEntity
