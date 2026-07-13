@@ -1,9 +1,12 @@
 package com.example.clashcoding.models;
 
+import com.example.clashcoding.models.Question;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.Instant;
+import java.util.List;
 
 @Data
 @Entity
@@ -26,6 +29,13 @@ public class ContestSession {
 
     @Column(name = "sessionEnd")
     private Instant sessionEnd;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "contestseesion_question", joinColumns = @JoinColumn(name = "id"), inverseJoinColumns = @JoinColumn(name = "questionID"))
+    private List<Question> questions;
+
+    @Column(name = "status")
+    private String status;
 
     @PrePersist
     private void prepersist() {

@@ -15,4 +15,6 @@ public class ContestEnterResponse {
     public Instant sessionEnd;
 
     public Long secondsLeft;
+
+    public String status;
 }

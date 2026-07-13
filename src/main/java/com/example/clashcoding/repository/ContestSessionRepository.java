@@ -7,4 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ContestSessionRepository extends JpaRepository<ContestSession, Long> {
     ContestSession findByContestId_IdAndUserID_Id(Long contestIdId, Long userIDId);
+
+    ContestSession findByContestId_IdAndUserID(Long contestIdId, User userID);
 }

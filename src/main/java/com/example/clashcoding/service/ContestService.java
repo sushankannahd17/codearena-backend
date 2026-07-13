@@ -7,6 +7,7 @@ import com.example.clashcoding.repository.*;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -134,13 +135,15 @@ public class ContestService {
 			Instant endSession = now.plusSeconds(contest.getMinutes() * 60);
 			Instant endContest = contest.getEndDate();
 			session.setSessionEnd(endSession.isBefore(endContest) ? endSession : endContest);
+			session.setQuestions(new ArrayList<>(contest.getQuestions()));
+			session.setStatus("Ongoing");
 
 			sessionRepository.save(session);
 
-			return new ContestEnterResponse(contest.getQuestions(), session.getSessionEnd(), Duration.between(Instant.now(), session.getSessionEnd()).toSeconds());
+			return new ContestEnterResponse(contest.getQuestions(), session.getSessionEnd(), Duration.between(Instant.now(), session.getSessionEnd()).toSeconds(), session.getStatus());
 		}
 
-		return new ContestEnterResponse(contest.getQuestions(), contestSession.getSessionEnd(), Math.max(0, Duration.between(Instant.now(), contestSession.getSessionEnd()).toSeconds()));
+		return new ContestEnterResponse(contestSession.getQuestions(), contestSession.getSessionEnd(), Math.max(0, Duration.between(Instant.now(), contestSession.getSessionEnd()).toSeconds()), contestSession.getStatus());
     }
 
 	public ResultResponse submitCode(String code, Long userID, Long contestID, Long questionID, String language) throws Exception {
@@ -203,7 +206,6 @@ public class ContestService {
 
 			String output = response.getRun().getOutput().trim();
 			String expected = tcList.get(i).getOutput().trim();
-			System.out.println(output + " " + expected);
 
 			if (!output.equals(expected)) {
 				submission.setVerdict((i) + " out of " + tcList.size() + " are correct");
@@ -214,6 +216,15 @@ public class ContestService {
 
 		submission.setVerdict("Accepted");
 		submissionRepository.save(submission);
+
+		ContestSession session = sessionRepository.findByContestId_IdAndUserID_Id(contestID, userID);
+		session.getQuestions().remove(question);
+
+		if (session.getQuestions().size() == 0) {
+			session.setStatus("Completed");
+		}
+
+		sessionRepository.save(session);
 
 		return new ResultResponse("Code Accepted");
 	}
