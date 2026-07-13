@@ -1,22 +1,23 @@
 package com.example.clashcoding.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class RunResponse {
-    private String stdout;
 
-    private String stderr;
+	private String stdout;
 
-    private String output;
+	private String stderr;
 
-    private Integer code;
+	private String output;
 
-    private String signal;
+	private Integer code;
+
+	private String signal;
 }

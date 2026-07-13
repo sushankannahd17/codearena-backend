@@ -8,8 +8,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FileDTO {
-    private String name;
-    public String content;
 
-    public FileDTO(String content) {this.content = content;}
+	private String name;
+	public String content;
+
+	public FileDTO(String content) {
+		this.content = content;
+	}
 }

@@ -3,43 +3,47 @@ package com.example.clashcoding.models;
 import com.example.clashcoding.models.Question;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.Data;
-
 import java.time.Instant;
 import java.util.List;
+import lombok.Data;
 
 @Data
 @Entity
 @Table(name = "contestsession")
 public class ContestSession {
-    @Id
-    @GeneratedValue
-    private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "contestId", nullable = false)
-    private Contest contestId;
+	@Id
+	@GeneratedValue
+	private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userID", nullable = false)
-    private User userID;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "contestId", nullable = false)
+	private Contest contestId;
 
-    @Column(name = "sessionStart")
-    private Instant sessionStart;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "userID", nullable = false)
+	private User userID;
 
-    @Column(name = "sessionEnd")
-    private Instant sessionEnd;
+	@Column(name = "sessionStart")
+	private Instant sessionStart;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "contestseesion_question", joinColumns = @JoinColumn(name = "id"), inverseJoinColumns = @JoinColumn(name = "questionID"))
-    private List<Question> questions;
+	@Column(name = "sessionEnd")
+	private Instant sessionEnd;
 
-    @Column(name = "status")
-    private String status;
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(
+		name = "contestseesion_question",
+		joinColumns = @JoinColumn(name = "id"),
+		inverseJoinColumns = @JoinColumn(name = "questionID")
+	)
+	private List<Question> questions;
 
-    @PrePersist
-    private void prepersist() {
-        Instant now = Instant.now();
-        sessionStart = now;
-    }
+	@Column(name = "status")
+	private String status;
+
+	@PrePersist
+	private void prepersist() {
+		Instant now = Instant.now();
+		sessionStart = now;
+	}
 }

@@ -4,17 +4,15 @@ import com.example.clashcoding.config.ExceptionConfig;
 import com.example.clashcoding.dto.ContestDTO;
 import com.example.clashcoding.models.*;
 import com.example.clashcoding.repository.*;
-
+import com.example.clashcoding.response.ContestEnterResponse;
+import com.example.clashcoding.response.ExecuteResponse;
+import com.example.clashcoding.response.ResultResponse;
+import com.example.clashcoding.response.RunResponse;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import com.example.clashcoding.response.ContestEnterResponse;
-import com.example.clashcoding.response.ExecuteResponse;
-import com.example.clashcoding.response.ResultResponse;
-import com.example.clashcoding.response.RunResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,8 +30,10 @@ public class ContestService {
 
 	@Autowired
 	private ContestSessionRepository sessionRepository;
-    @Autowired
-    private SubmissionRepository submissionRepository;
+
+	@Autowired
+	private SubmissionRepository submissionRepository;
+
 	@Autowired
 	private JudgeService judgeService;
 
@@ -100,8 +100,9 @@ public class ContestService {
 	}
 
 	public Contest getContest(Long contestID, Long userID) {
-		Contest contest = contestRepository.findById(contestID)
-				.orElseThrow(() -> new ExceptionConfig("Contest not found"));
+		Contest contest = contestRepository
+			.findById(contestID)
+			.orElseThrow(() -> new ExceptionConfig("Contest not found"));
 
 		boolean isAuthorized = contest.getAttenders().stream().anyMatch(user -> user.getId().equals(userID));
 
@@ -112,8 +113,10 @@ public class ContestService {
 		return contest;
 	}
 
-    public ContestEnterResponse validateAndEnter(Long contestID, Long userID) {
-        Contest contest = contestRepository.findById(contestID).orElseThrow(() -> new ExceptionConfig("Contest not found"));
+	public ContestEnterResponse validateAndEnter(Long contestID, Long userID) {
+		Contest contest = contestRepository
+			.findById(contestID)
+			.orElseThrow(() -> new ExceptionConfig("Contest not found"));
 
 		boolean isAuthorized = contest.getAttenders().stream().anyMatch(user -> user.getId().equals(userID));
 
@@ -140,20 +143,37 @@ public class ContestService {
 
 			sessionRepository.save(session);
 
-			return new ContestEnterResponse(contest.getQuestions(), session.getSessionEnd(), Duration.between(Instant.now(), session.getSessionEnd()).toSeconds(), session.getStatus());
+			return new ContestEnterResponse(
+				contest.getQuestions(),
+				session.getSessionEnd(),
+				Duration.between(Instant.now(), session.getSessionEnd()).toSeconds(),
+				session.getStatus()
+			);
 		}
 
-		return new ContestEnterResponse(contestSession.getQuestions(), contestSession.getSessionEnd(), Math.max(0, Duration.between(Instant.now(), contestSession.getSessionEnd()).toSeconds()), contestSession.getStatus());
-    }
+		return new ContestEnterResponse(
+			contestSession.getQuestions(),
+			contestSession.getSessionEnd(),
+			Math.max(0, Duration.between(Instant.now(), contestSession.getSessionEnd()).toSeconds()),
+			contestSession.getStatus()
+		);
+	}
 
-	public ResultResponse submitCode(String code, Long userID, Long contestID, Long questionID, String language) throws Exception {
-		Contest contest = contestRepository.findById(contestID).orElseThrow(() -> new ExceptionConfig("Contest not found"));
+	public ResultResponse submitCode(String code, Long userID, Long contestID, Long questionID, String language)
+		throws Exception {
+		Contest contest = contestRepository
+			.findById(contestID)
+			.orElseThrow(() -> new ExceptionConfig("Contest not found"));
 		Instant now = Instant.now();
 
 		if (now.isBefore(contest.getStartDate())) throw new ExceptionConfig("Contest has not started");
-		if (now.isAfter(contest.getEndDate())) throw  new ExceptionConfig("Contest has ended");
+		if (now.isAfter(contest.getEndDate())) throw new ExceptionConfig("Contest has ended");
 
-		Submission submission = submissionRepository.findByUser_IdAndContest_IdAndQuestion_Id(userID, contestID, questionID);
+		Submission submission = submissionRepository.findByUser_IdAndContest_IdAndQuestion_Id(
+			userID,
+			contestID,
+			questionID
+		);
 
 		if (submission == null) {
 			Submission newSubmission = new Submission();
@@ -227,5 +247,15 @@ public class ContestService {
 		sessionRepository.save(session);
 
 		return new ResultResponse("Code Accepted");
+	}
+
+	public String fetchSubmittedCode(Long contestID, Long questionID, Long userID) {
+		Submission oldSubmission = submissionRepository.findByUser_IdAndContest_IdAndQuestion_Id(
+			userID,
+			contestID,
+			questionID
+		);
+
+		return (oldSubmission == null ? "" : oldSubmission.getCode());
 	}
 }

@@ -8,7 +8,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SubmitDTO {
-    public String language;
-    public Long questionID;
-    public String code;
+
+	public String language;
+	public Long questionID;
+	public String code;
 }

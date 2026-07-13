@@ -1,20 +1,20 @@
 package com.example.clashcoding.dto;
 
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ExecuteDTO {
-    private String language;
 
-    private String version;
+	private String language;
 
-    private List<FileDTO> files;
+	private String version;
 
-    private String stdin;
+	private List<FileDTO> files;
+
+	private String stdin;
 }

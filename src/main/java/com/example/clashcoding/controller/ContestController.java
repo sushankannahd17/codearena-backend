@@ -33,12 +33,12 @@ public class ContestController {
 			Long id = getID.getId(request);
 
 			return ResponseEntity
-					.status(HttpStatus.CREATED)
-					.body(new ResponseBody("success", service.createContest(dto, id)));
+				.status(HttpStatus.CREATED)
+				.body(new ResponseBody("success", service.createContest(dto, id)));
 		} catch (Exception e) {
 			return ResponseEntity
-					.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body(new ResponseBody("error", e.getMessage()));
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ResponseBody("error", e.getMessage()));
 		}
 	}
 
@@ -50,8 +50,8 @@ public class ContestController {
 			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.getContests(id)));
 		} catch (Exception e) {
 			return ResponseEntity
-					.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body(new ResponseBody("error", e.getMessage()));
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ResponseBody("error", e.getMessage()));
 		}
 	}
 
@@ -61,12 +61,12 @@ public class ContestController {
 			Long id = getID.getId(request);
 
 			return ResponseEntity
-					.status(HttpStatus.OK)
-					.body(new ResponseBody("success", service.viewAvailableContests(id)));
+				.status(HttpStatus.OK)
+				.body(new ResponseBody("success", service.viewAvailableContests(id)));
 		} catch (Exception e) {
 			return ResponseEntity
-					.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body(new ResponseBody("error", e.getMessage()));
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ResponseBody("error", e.getMessage()));
 		}
 	}
 
@@ -76,39 +76,39 @@ public class ContestController {
 			Long id = getID.getId(request);
 
 			return ResponseEntity
-					.status(HttpStatus.OK)
-					.body(new ResponseBody("success", service.deleteContest(id, contestID)));
+				.status(HttpStatus.OK)
+				.body(new ResponseBody("success", service.deleteContest(id, contestID)));
 		} catch (Exception e) {
 			if (e.getMessage().equals("User is not authenticated") || e.getMessage().equals("User is not authorized")) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ResponseBody("error", e.getMessage()));
 			}
 
 			return ResponseEntity
-					.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body(new ResponseBody("error", e.getMessage()));
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ResponseBody("error", e.getMessage()));
 		}
 	}
 
 	@PatchMapping("/modify/{contestID}")
 	public ResponseEntity<?> modifyQuestions(
-			@PathVariable Long contestID,
-			HttpServletRequest request,
-			@RequestBody ContestDTO dto
+		@PathVariable Long contestID,
+		HttpServletRequest request,
+		@RequestBody ContestDTO dto
 	) {
 		try {
 			Long id = getID.getId(request);
 
 			return ResponseEntity
-					.status(HttpStatus.OK)
-					.body(new ResponseBody("success", service.modifyQuestions(contestID, id, dto)));
+				.status(HttpStatus.OK)
+				.body(new ResponseBody("success", service.modifyQuestions(contestID, id, dto)));
 		} catch (Exception e) {
 			if (e.getMessage().equals("User is not authenticated") || e.getMessage().equals("User is not authorized")) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ResponseBody("error", e.getMessage()));
 			}
 
 			return ResponseEntity
-					.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body(new ResponseBody("error", e.getMessage()));
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ResponseBody("error", e.getMessage()));
 		}
 	}
 
@@ -117,11 +117,13 @@ public class ContestController {
 		try {
 			Long userID = getID.getId(request);
 
-			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.getContest(contestID, userID	)));
+			return ResponseEntity
+				.status(HttpStatus.OK)
+				.body(new ResponseBody("success", service.getContest(contestID, userID)));
 		} catch (Exception e) {
 			return ResponseEntity
-					.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body(new ResponseBody("error", e.getMessage()));
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ResponseBody("error", e.getMessage()));
 		}
 	}
 
@@ -130,24 +132,56 @@ public class ContestController {
 		try {
 			Long userID = getID.getId(request);
 
-			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.validateAndEnter(contestID, userID)));
+			return ResponseEntity
+				.status(HttpStatus.OK)
+				.body(new ResponseBody("success", service.validateAndEnter(contestID, userID)));
 		} catch (Exception e) {
 			return ResponseEntity
-					.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body(new ResponseBody("error", e.getMessage()));
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ResponseBody("error", e.getMessage()));
 		}
 	}
 
 	@PostMapping("/{contestID}/execute")
-	public ResponseEntity<?> executeCode(@PathVariable Long contestID, HttpServletRequest request, @RequestBody SubmitDTO dto) {
+	public ResponseEntity<?> executeCode(
+		@PathVariable Long contestID,
+		HttpServletRequest request,
+		@RequestBody SubmitDTO dto
+	) {
 		try {
 			Long userID = getID.getId(request);
 
-			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.submitCode(dto.getCode(), userID, contestID, dto.getQuestionID(), dto.getLanguage())));
+			return ResponseEntity
+				.status(HttpStatus.OK)
+				.body(
+					new ResponseBody(
+						"success",
+						service.submitCode(dto.getCode(), userID, contestID, dto.getQuestionID(), dto.getLanguage())
+					)
+				);
 		} catch (Exception e) {
 			return ResponseEntity
-					.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body(new ResponseBody("error", e.getMessage()));
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ResponseBody("error", e.getMessage()));
+		}
+	}
+
+	@GetMapping("/fetch/{contestID}/{questionID}")
+	public ResponseEntity<?> fetchSubmittedCode(
+		@PathVariable Long contestID,
+		@PathVariable Long questionID,
+		HttpServletRequest request
+	) {
+		try {
+			Long userID = getID.getId(request);
+
+			return ResponseEntity
+				.status(HttpStatus.OK)
+				.body(new ResponseBody("success", service.fetchSubmittedCode(contestID, questionID, userID)));
+		} catch (Exception e) {
+			return ResponseEntity
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ResponseBody("error", e.getMessage()));
 		}
 	}
 }

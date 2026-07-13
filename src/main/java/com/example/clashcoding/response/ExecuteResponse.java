@@ -8,7 +8,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ExecuteResponse {
-    private RunResponse run;
-    private String language;
-    private String version;
+
+	private RunResponse run;
+	private String language;
+	private String version;
 }
