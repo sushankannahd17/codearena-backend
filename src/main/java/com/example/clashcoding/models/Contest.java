@@ -40,6 +40,9 @@ public class Contest {
 	@Column(name = "end_date")
 	public Instant endDate;
 
+	@Column(name = "resumeCount")
+	private Integer maxResumeCount;
+
 	@CreatedDate
 	@Column(name = "created_at", nullable = false)
 	private Instant createdAt;

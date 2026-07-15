@@ -2,6 +2,7 @@ package com.example.clashcoding.controller;
 
 import com.example.clashcoding.config.ExceptionConfig;
 import com.example.clashcoding.dto.ContestDTO;
+import com.example.clashcoding.dto.ResumeDTO;
 import com.example.clashcoding.dto.SubmitDTO;
 import com.example.clashcoding.service.ContestService;
 import com.example.clashcoding.utils.GetID;
@@ -136,6 +137,10 @@ public class ContestController {
 				.status(HttpStatus.OK)
 				.body(new ResponseBody("success", service.validateAndEnter(contestID, userID)));
 		} catch (Exception e) {
+			if (e.getMessage().equals("User has exceeded the resume count")) {
+				return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ResponseBody("error", e.getMessage()));
+			}
+
 			return ResponseEntity
 				.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(new ResponseBody("error", e.getMessage()));
@@ -178,6 +183,21 @@ public class ContestController {
 			return ResponseEntity
 				.status(HttpStatus.OK)
 				.body(new ResponseBody("success", service.fetchSubmittedCode(contestID, questionID, userID)));
+		} catch (Exception e) {
+			return ResponseEntity
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ResponseBody("error", e.getMessage()));
+		}
+	}
+
+	@PatchMapping("/resumecount")
+	public ResponseEntity<?> modifyResumeCount(@RequestBody ResumeDTO dto, HttpServletRequest request) {
+		try {
+			Long userID = getID.getId(request);
+
+			return ResponseEntity
+				.status(HttpStatus.OK)
+				.body(new ResponseBody("success", service.modifyResumeCount(dto.getContestID(), userID)));
 		} catch (Exception e) {
 			return ResponseEntity
 				.status(HttpStatus.INTERNAL_SERVER_ERROR)

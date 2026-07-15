@@ -18,11 +18,11 @@ public class ContestSession {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "contestId", nullable = false)
-	private Contest contestId;
+	private Contest contest;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "userID", nullable = false)
-	private User userID;
+	private User user;
 
 	@Column(name = "sessionStart")
 	private Instant sessionStart;
@@ -40,6 +40,12 @@ public class ContestSession {
 
 	@Column(name = "status")
 	private String status;
+
+	@Column(name = "submitcount")
+	private Integer submitCount;
+
+	@Column(name = "resumecount")
+	private Integer resumeCount;
 
 	@PrePersist
 	private void prepersist() {

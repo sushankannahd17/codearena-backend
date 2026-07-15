@@ -17,4 +17,6 @@ public class ContestEnterResponse {
 	public Long secondsLeft;
 
 	public String status;
+
+	public Integer resumeCount;
 }

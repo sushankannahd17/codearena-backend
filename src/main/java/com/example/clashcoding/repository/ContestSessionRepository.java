@@ -6,7 +6,9 @@ import com.example.clashcoding.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ContestSessionRepository extends JpaRepository<ContestSession, Long> {
-	ContestSession findByContestId_IdAndUserID_Id(Long contestIdId, Long userIDId);
+	void deleteAllByContestId(Contest contestId);
 
-	ContestSession findByContestId_IdAndUserID(Long contestIdId, User userID);
+	void deleteAllByContestId_Id(Long contestIdId);
+
+	ContestSession findByContest_IdAndUser_Id(Long contestID, Long userID);
 }

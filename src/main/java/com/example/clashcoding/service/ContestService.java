@@ -8,6 +8,7 @@ import com.example.clashcoding.response.ContestEnterResponse;
 import com.example.clashcoding.response.ExecuteResponse;
 import com.example.clashcoding.response.ResultResponse;
 import com.example.clashcoding.response.RunResponse;
+import jakarta.transaction.Transactional;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -50,6 +51,7 @@ public class ContestService {
 		newContest.setUser(creator);
 		newContest.setStartDate(dto.getStartDate());
 		newContest.setEndDate(dto.getEndDate());
+		newContest.setMaxResumeCount(dto.getMaxResumeCount());
 
 		contestRepository.save(newContest);
 		return "Contest has been created successfully";
@@ -67,14 +69,17 @@ public class ContestService {
 		return contests;
 	}
 
-	public String deleteContest(Long userID, Long questionID) {
-		Contest contest = contestRepository.findById(questionID).orElseThrow();
+	@Transactional
+	public String deleteContest(Long userID, Long contestId) {
+		Contest contest = contestRepository.findById(contestId).orElseThrow();
 
 		if (!contest.getUser().getId().equals(userID)) {
 			throw new ExceptionConfig("User is not authorized");
 		}
 
-		contestRepository.deleteById(questionID);
+		submissionRepository.deleteAllByContest_Id(contest.getId());
+		sessionRepository.deleteAllByContestId_Id(contest.getId());
+		contestRepository.deleteById(contestId);
 		return "Contest deleted successfully";
 	}
 
@@ -124,7 +129,7 @@ public class ContestService {
 			throw new ExceptionConfig("User is not authorized");
 		}
 
-		ContestSession contestSession = sessionRepository.findByContestId_IdAndUserID_Id(contest.getId(), userID);
+		ContestSession contestSession = sessionRepository.findByContest_IdAndUser_Id(contest.getId(), userID);
 
 		Instant now = Instant.now();
 		if (now.isBefore(contest.getStartDate())) throw new ExceptionConfig("Contest is not started yet");
@@ -133,13 +138,15 @@ public class ContestService {
 
 		if (contestSession == null) {
 			ContestSession session = new ContestSession();
-			session.setContestId(contest);
-			session.setUserID(userRepository.findById(userID).orElseThrow());
+			session.setContest(contest);
+			session.setUser(userRepository.findById(userID).orElseThrow());
 			Instant endSession = now.plusSeconds(contest.getMinutes() * 60);
 			Instant endContest = contest.getEndDate();
 			session.setSessionEnd(endSession.isBefore(endContest) ? endSession : endContest);
 			session.setQuestions(new ArrayList<>(contest.getQuestions()));
 			session.setStatus("Ongoing");
+			session.setSubmitCount(0);
+			session.setResumeCount(0);
 
 			sessionRepository.save(session);
 
@@ -147,15 +154,21 @@ public class ContestService {
 				contest.getQuestions(),
 				session.getSessionEnd(),
 				Duration.between(Instant.now(), session.getSessionEnd()).toSeconds(),
-				session.getStatus()
+				session.getStatus(),
+				0
 			);
 		}
+
+		if (contestSession.getResumeCount() >= contest.getMaxResumeCount()) throw new ExceptionConfig(
+			"User has exceeded the resume count"
+		);
 
 		return new ContestEnterResponse(
 			contestSession.getQuestions(),
 			contestSession.getSessionEnd(),
 			Math.max(0, Duration.between(Instant.now(), contestSession.getSessionEnd()).toSeconds()),
-			contestSession.getStatus()
+			contestSession.getStatus(),
+			contestSession.getResumeCount()
 		);
 	}
 
@@ -165,6 +178,10 @@ public class ContestService {
 			.findById(contestID)
 			.orElseThrow(() -> new ExceptionConfig("Contest not found"));
 		Instant now = Instant.now();
+
+		ContestSession session = sessionRepository.findByContest_IdAndUser_Id(contestID, userID);
+		session.setSubmitCount(session.getSubmitCount() + 1);
+		sessionRepository.save(session);
 
 		if (now.isBefore(contest.getStartDate())) throw new ExceptionConfig("Contest has not started");
 		if (now.isAfter(contest.getEndDate())) throw new ExceptionConfig("Contest has ended");
@@ -193,14 +210,15 @@ public class ContestService {
 
 		Question question = questionRepository.findById(questionID).orElseThrow();
 		List<ExamplesIO> examplesIOList = question.getExamples();
+		List<TestCase> tcList = question.getTc();
 
 		for (int i = 0; i < examplesIOList.size(); i++) {
 			ExecuteResponse response = judgeService.execute(code, language, examplesIOList.get(i).getInput());
 
-			if (response.getRun().getCode() != 0) {
+			if (response.getRun().getCode() == null || response.getRun().getCode() != 0) {
 				submission.setVerdict("Runtime Error");
 				submissionRepository.save(submission);
-				return new ResultResponse(submission.getVerdict(), response.getRun().getStderr());
+				return new ResultResponse(submission.getVerdict(), response.getRun().getOutput());
 			}
 
 			String output = response.getRun().getOutput().trim();
@@ -208,12 +226,12 @@ public class ContestService {
 
 			if (!output.equals(expected)) {
 				submission.setVerdict("Wrong Answer");
+				submission.setPassedTC(i);
+				submission.setTotalTC(examplesIOList.size() + tcList.size());
 				submissionRepository.save(submission);
 				return new ResultResponse(submission.getVerdict(), examplesIOList.get(i).getInput(), output, expected);
 			}
 		}
-
-		List<TestCase> tcList = question.getTc();
 
 		for (int i = 0; i < tcList.size(); i++) {
 			ExecuteResponse response = judgeService.execute(code, language, tcList.get(i).getInput());
@@ -228,16 +246,22 @@ public class ContestService {
 			String expected = tcList.get(i).getOutput().trim();
 
 			if (!output.equals(expected)) {
-				submission.setVerdict((i) + " out of " + tcList.size() + " are correct");
+				submission.setVerdict(
+					(examplesIOList.size() + i) + " out of " + (tcList.size() + examplesIOList.size()) + " are correct"
+				);
+				submission.setPassedTC(examplesIOList.size() + i);
+				submission.setTotalTC(examplesIOList.size() + tcList.size());
 				submissionRepository.save(submission);
 				return new ResultResponse(submission.getVerdict());
 			}
 		}
 
 		submission.setVerdict("Accepted");
+		submission.setPassedTC(examplesIOList.size() + tcList.size());
+		submission.setTotalTC(examplesIOList.size() + tcList.size());
 		submissionRepository.save(submission);
 
-		ContestSession session = sessionRepository.findByContestId_IdAndUserID_Id(contestID, userID);
+		session = sessionRepository.findByContest_IdAndUser_Id(contestID, userID);
 		session.getQuestions().remove(question);
 
 		if (session.getQuestions().size() == 0) {
@@ -257,5 +281,14 @@ public class ContestService {
 		);
 
 		return (oldSubmission == null ? "" : oldSubmission.getCode());
+	}
+
+	public String modifyResumeCount(Long contestID, Long userID) {
+		ContestSession session = sessionRepository.findByContest_IdAndUser_Id(contestID, userID);
+
+		session.setResumeCount(session.getResumeCount() + 1);
+		sessionRepository.save(session);
+
+		return "Modified resume count";
 	}
 }
