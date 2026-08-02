@@ -38,9 +38,6 @@ public class ContestSession {
 	)
 	private List<Question> questions;
 
-	@Column(name = "status")
-	private String status;
-
 	@Column(name = "submitcount")
 	private Integer submitCount;
 

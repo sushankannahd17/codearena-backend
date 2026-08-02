@@ -1,14 +1,12 @@
 package com.example.clashcoding.controller;
 
-import com.example.clashcoding.config.ExceptionConfig;
 import com.example.clashcoding.dto.ContestDTO;
 import com.example.clashcoding.dto.ResumeDTO;
 import com.example.clashcoding.dto.SubmitDTO;
 import com.example.clashcoding.service.ContestService;
-import com.example.clashcoding.utils.GetID;
+import com.example.clashcoding.utils.ID;
 import com.example.clashcoding.utils.JwtUtils;
 import com.example.clashcoding.utils.ResponseBody;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,14 +14,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/contest")
+@RequestMapping("/api/contest")
 public class ContestController {
 
 	@Autowired
 	private ContestService service;
 
 	@Autowired
-	private GetID getID;
+	private ID ID;
 
 	@Autowired
 	private JwtUtils jwtUtils;
@@ -31,7 +29,7 @@ public class ContestController {
 	@PostMapping("/create")
 	public ResponseEntity<?> createContest(@RequestBody ContestDTO dto, HttpServletRequest request) {
 		try {
-			Long id = getID.getId(request);
+			Long id = ID.getId(request);
 
 			return ResponseEntity
 				.status(HttpStatus.CREATED)
@@ -46,7 +44,7 @@ public class ContestController {
 	@GetMapping("/getcreatedcontests")
 	public ResponseEntity<?> getContests(HttpServletRequest request) {
 		try {
-			Long id = getID.getId(request);
+			Long id = ID.getId(request);
 
 			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.getContests(id)));
 		} catch (Exception e) {
@@ -59,7 +57,7 @@ public class ContestController {
 	@GetMapping("/viewavailablecontests")
 	public ResponseEntity<?> viewAvailableContests(HttpServletRequest request) {
 		try {
-			Long id = getID.getId(request);
+			Long id = ID.getId(request);
 
 			return ResponseEntity
 				.status(HttpStatus.OK)
@@ -74,7 +72,7 @@ public class ContestController {
 	@DeleteMapping("/deletecontest/{contestID}")
 	public ResponseEntity<?> deleteContest(HttpServletRequest request, @PathVariable Long contestID) {
 		try {
-			Long id = getID.getId(request);
+			Long id = ID.getId(request);
 
 			return ResponseEntity
 				.status(HttpStatus.OK)
@@ -97,7 +95,7 @@ public class ContestController {
 		@RequestBody ContestDTO dto
 	) {
 		try {
-			Long id = getID.getId(request);
+			Long id = ID.getId(request);
 
 			return ResponseEntity
 				.status(HttpStatus.OK)
@@ -116,7 +114,7 @@ public class ContestController {
 	@GetMapping("/{contestID}")
 	public ResponseEntity<?> contestDetails(@PathVariable Long contestID, HttpServletRequest request) {
 		try {
-			Long userID = getID.getId(request);
+			Long userID = ID.getId(request);
 
 			return ResponseEntity
 				.status(HttpStatus.OK)
@@ -131,7 +129,7 @@ public class ContestController {
 	@PostMapping("/{contestID}/entercontest")
 	public ResponseEntity<?> validateAndEnter(@PathVariable Long contestID, HttpServletRequest request) {
 		try {
-			Long userID = getID.getId(request);
+			Long userID = ID.getId(request);
 
 			return ResponseEntity
 				.status(HttpStatus.OK)
@@ -147,6 +145,30 @@ public class ContestController {
 		}
 	}
 
+	@PostMapping("/{contestID}/run")
+	public ResponseEntity<?> runCode(
+			@PathVariable Long contestID,
+			HttpServletRequest request,
+			@RequestBody SubmitDTO dto
+	) {
+		try {
+			Long userID = ID.getId(request);
+
+			return ResponseEntity
+					.status(HttpStatus.OK)
+					.body(
+							new ResponseBody(
+									"success",
+									service.runCode(dto.getCode(), userID, contestID, dto.getQuestionID(), dto.getLanguage())
+							)
+					);
+		} catch (Exception e) {
+			return ResponseEntity
+					.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(new ResponseBody("error", e.getMessage()));
+		}
+	}
+
 	@PostMapping("/{contestID}/execute")
 	public ResponseEntity<?> executeCode(
 		@PathVariable Long contestID,
@@ -154,7 +176,7 @@ public class ContestController {
 		@RequestBody SubmitDTO dto
 	) {
 		try {
-			Long userID = getID.getId(request);
+			Long userID = ID.getId(request);
 
 			return ResponseEntity
 				.status(HttpStatus.OK)
@@ -178,7 +200,7 @@ public class ContestController {
 		HttpServletRequest request
 	) {
 		try {
-			Long userID = getID.getId(request);
+			Long userID = ID.getId(request);
 
 			return ResponseEntity
 				.status(HttpStatus.OK)
@@ -193,7 +215,7 @@ public class ContestController {
 	@PatchMapping("/resumecount")
 	public ResponseEntity<?> modifyResumeCount(@RequestBody ResumeDTO dto, HttpServletRequest request) {
 		try {
-			Long userID = getID.getId(request);
+			Long userID = ID.getId(request);
 
 			return ResponseEntity
 				.status(HttpStatus.OK)

@@ -13,7 +13,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -106,8 +105,7 @@ public class ContestService {
 
 	public Contest getContest(Long contestID, Long userID) {
 		Contest contest = contestRepository
-			.findById(contestID)
-			.orElseThrow(() -> new ExceptionConfig("Contest not found"));
+			.findById(contestID).orElseThrow();
 
 		boolean isAuthorized = contest.getAttenders().stream().anyMatch(user -> user.getId().equals(userID));
 
@@ -120,8 +118,7 @@ public class ContestService {
 
 	public ContestEnterResponse validateAndEnter(Long contestID, Long userID) {
 		Contest contest = contestRepository
-			.findById(contestID)
-			.orElseThrow(() -> new ExceptionConfig("Contest not found"));
+			.findById(contestID).orElseThrow();
 
 		boolean isAuthorized = contest.getAttenders().stream().anyMatch(user -> user.getId().equals(userID));
 
@@ -144,7 +141,6 @@ public class ContestService {
 			Instant endContest = contest.getEndDate();
 			session.setSessionEnd(endSession.isBefore(endContest) ? endSession : endContest);
 			session.setQuestions(new ArrayList<>(contest.getQuestions()));
-			session.setStatus("Ongoing");
 			session.setSubmitCount(0);
 			session.setResumeCount(0);
 
@@ -154,29 +150,56 @@ public class ContestService {
 				contest.getQuestions(),
 				session.getSessionEnd(),
 				Duration.between(Instant.now(), session.getSessionEnd()).toSeconds(),
-				session.getStatus(),
 				0
 			);
 		}
 
 		if (contestSession.getResumeCount() >= contest.getMaxResumeCount()) throw new ExceptionConfig(
-			"User has exceeded the resume count"
+			"You have exceeded the resume count, you cannot enter the contest"
 		);
+
+		if (contestSession.getSessionEnd().isBefore(Instant.now())) {
+			throw new ExceptionConfig("Your attempt to attend the contest is over");
+		}
 
 		return new ContestEnterResponse(
 			contestSession.getQuestions(),
 			contestSession.getSessionEnd(),
 			Math.max(0, Duration.between(Instant.now(), contestSession.getSessionEnd()).toSeconds()),
-			contestSession.getStatus(),
 			contestSession.getResumeCount()
 		);
+	}
+
+	public ResultResponse runCode(String code, Long userID, Long contestID, Long questionID, String language) throws Exception {
+		Contest contest = contestRepository.findById(contestID).orElseThrow();
+
+		Question question = questionRepository.findById(questionID).orElseThrow();
+		List<ExamplesIO> examplesIOList = question.getExamples();
+		List<TestCase> tcList = question.getTc();
+
+		for (int i = 0; i < examplesIOList.size(); i++) {
+			ExecuteResponse response = judgeService.execute(code, language, examplesIOList.get(i).getInput());
+
+			if (response.getRun().getCode() == null || response.getRun().getCode() != 0) {
+
+				return new ResultResponse("Error", response.getRun().getOutput());
+			}
+
+			String output = response.getRun().getOutput().trim();
+			String expected = examplesIOList.get(i).getOutput().trim();
+
+			if (!output.equals(expected)) {
+				return new ResultResponse("Wrong answer", examplesIOList.get(i).getInput(), output, expected);
+			}
+		}
+
+		return new ResultResponse("Sample Test Cases are passed successfully");
 	}
 
 	public ResultResponse submitCode(String code, Long userID, Long contestID, Long questionID, String language)
 		throws Exception {
 		Contest contest = contestRepository
-			.findById(contestID)
-			.orElseThrow(() -> new ExceptionConfig("Contest not found"));
+			.findById(contestID).orElseThrow();
 		Instant now = Instant.now();
 
 		ContestSession session = sessionRepository.findByContest_IdAndUser_Id(contestID, userID);
@@ -265,7 +288,7 @@ public class ContestService {
 		session.getQuestions().remove(question);
 
 		if (session.getQuestions().size() == 0) {
-			session.setStatus("Completed");
+			session.setSessionEnd(Instant.now());
 		}
 
 		sessionRepository.save(session);

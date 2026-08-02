@@ -1,19 +1,15 @@
 package com.example.clashcoding.service;
 
-import com.example.clashcoding.dto.ExecuteDTO;
-import com.example.clashcoding.dto.FileDTO;
 import com.example.clashcoding.response.ExecuteResponse;
-import com.example.clashcoding.response.RunResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.net.*;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 public class JudgeService {
@@ -21,27 +17,43 @@ public class JudgeService {
 	@Value("${judge.url}")
 	private String judgeURL;
 
-	private final HttpClient client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
+	private final RestTemplate restTemplate = new RestTemplate();
 	private final ObjectMapper mapper = new ObjectMapper();
 
+	private static final Map<String, String> languageExtMap = Map.of(
+			"python", "py",
+			"java", "java",
+			"cpp", "cpp",
+			"javascript", "js"
+	);
+
 	public ExecuteResponse execute(String code, String language, String input) throws Exception {
-		ExecuteDTO dto = new ExecuteDTO();
-		dto.setLanguage(language);
-		dto.setVersion("*");
-		dto.setFiles(List.of(new FileDTO(code)));
-		dto.setStdin(input);
 
-		String json = mapper.writeValueAsString(dto);
-		HttpRequest request = HttpRequest
-			.newBuilder()
-			.uri(URI.create(judgeURL))
-			.header("Content-Type", "application/json; charset=UTF-8")
-			.header("Accept", "application/json")
-			.POST(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
-			.build();
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
 
-		HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+		Map<String, Object> requestBody = new HashMap<>();
+		requestBody.put("language", language);
+		requestBody.put("version", "*");
+		requestBody.put("stdin", input);
 
-		return mapper.readValue(response.body(), ExecuteResponse.class);
+		requestBody.put("files", List.of(
+				Map.of(
+						"name", "main." + languageExtMap.get(language),
+						"content", code
+				)
+		));
+
+		HttpEntity<Map<String, Object>> request =
+				new HttpEntity<>(requestBody, headers);
+
+
+			ResponseEntity<String> response = restTemplate.postForEntity(
+					judgeURL,
+					request,
+					String.class
+			);
+
+			return mapper.readValue(response.getBody(), ExecuteResponse.class);
 	}
 }

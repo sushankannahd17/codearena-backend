@@ -1,30 +1,28 @@
 package com.example.clashcoding.controller;
 
-import com.example.clashcoding.config.ExceptionConfig;
 import com.example.clashcoding.dto.EmailDTO;
 import com.example.clashcoding.dto.UserDTO;
 import com.example.clashcoding.service.UserService;
-import com.example.clashcoding.utils.GetID;
+import com.example.clashcoding.utils.ID;
 import com.example.clashcoding.utils.JwtUtils;
 import com.example.clashcoding.utils.ResponseBody;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class UserController {
 
 	@Autowired
 	private UserService service;
 
 	@Autowired
-	private GetID getID;
+	private ID ID;
 
 	@Autowired
 	private JwtUtils jwtUtils;
@@ -34,6 +32,7 @@ public class UserController {
 		try {
 			return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseBody("success", service.signUp(dto)));
 		} catch (Exception e) {
+			e.printStackTrace();
 			return ResponseEntity.status(HttpStatus.CONFLICT).body(new ResponseBody("error", e.getMessage()));
 		}
 	}
@@ -49,7 +48,7 @@ public class UserController {
 			cookie.setHttpOnly(true);
 			cookie.setSecure(false);
 			cookie.setPath("/");
-			cookie.setMaxAge(60 * 60 * 5);
+			cookie.setMaxAge(60 * 60 * 5 * 100);
 
 			response.addCookie(cookie);
 
@@ -101,7 +100,7 @@ public class UserController {
 	@GetMapping("/all")
 	public ResponseEntity<?> getAllUsers(HttpServletRequest request) {
 		try {
-			Long id = getID.getId(request);
+			Long id = ID.getId(request);
 
 			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.getUsers(id)));
 		} catch (Exception e) {
@@ -114,7 +113,7 @@ public class UserController {
 	@GetMapping("/getProfile")
 	public ResponseEntity<?> getProfile(HttpServletRequest request) {
 		try {
-			Long id = getID.getId(request);
+			Long id = ID.getId(request);
 
 			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.getProfile(id)));
 		} catch (Exception e) {
@@ -144,6 +143,37 @@ public class UserController {
 			return ResponseEntity
 				.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(new ResponseBody("error", e.getMessage()));
+		}
+	}
+
+	@GetMapping("/generate-template")
+	public ResponseEntity<?> downloadTemplate() {
+		try {
+			byte[] excel = service.downloadTemplate();
+
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+
+			headers.setContentDisposition(ContentDisposition.attachment().filename("Users Template.xlsx").build());
+
+			return ResponseEntity.status(HttpStatus.OK).headers(headers).body(excel);
+		} catch (Exception e) {
+			return ResponseEntity
+					.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(new ResponseBody("error", e.getMessage()));
+		}
+	}
+
+	@PostMapping("/add-users")
+	public ResponseEntity<?> addUsers(@RequestParam("file")MultipartFile file, HttpServletRequest request) {
+		try {
+			Long id = ID.getId(request);
+
+			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.addUsers(file, id)));
+		} catch (Exception e) {
+			return ResponseEntity
+					.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(new ResponseBody("error", e.getMessage()));
 		}
 	}
 }

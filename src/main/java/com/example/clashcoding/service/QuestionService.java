@@ -28,7 +28,7 @@ public class QuestionService {
 		question.setTitle(dto.getTitle());
 		question.setDescription(dto.getDescription());
 		question.setUser(
-			userRepository.findById(dto.getUserID()).orElseThrow(() -> new ExceptionConfig("User is not found"))
+			userRepository.findById(dto.getUserID()).orElseThrow()
 		);
 
 		for (ExamplesIODTO exampleDTO : dto.getExamplesIO()) {

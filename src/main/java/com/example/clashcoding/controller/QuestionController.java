@@ -1,14 +1,11 @@
 package com.example.clashcoding.controller;
 
-import com.example.clashcoding.config.ExceptionConfig;
 import com.example.clashcoding.dto.QuestionDTO;
 import com.example.clashcoding.dto.TestCasesDTO;
-import com.example.clashcoding.models.TestCase;
 import com.example.clashcoding.service.QuestionService;
-import com.example.clashcoding.utils.GetID;
+import com.example.clashcoding.utils.ID;
 import com.example.clashcoding.utils.JwtUtils;
 import com.example.clashcoding.utils.ResponseBody;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,11 +14,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/questions")
+@RequestMapping("/api/questions")
 public class QuestionController {
 
 	@Autowired
-	private GetID getID;
+	private ID ID;
 
 	@Autowired
 	private QuestionService service;
@@ -32,7 +29,7 @@ public class QuestionController {
 	@PostMapping("/create")
 	public ResponseEntity<?> createQuestion(@RequestBody QuestionDTO dto, HttpServletRequest request) {
 		try {
-			Long id = getID.getId(request);
+			Long id = ID.getId(request);
 
 			dto.setUserID(id);
 
@@ -57,7 +54,7 @@ public class QuestionController {
 		HttpServletRequest request
 	) {
 		try {
-			Long id = getID.getId(request);
+			Long id = ID.getId(request);
 
 			return ResponseEntity
 				.status(HttpStatus.OK)
@@ -76,7 +73,7 @@ public class QuestionController {
 	@DeleteMapping("/{questionID}")
 	public ResponseEntity<?> deleteQuestion(@PathVariable Long questionID, HttpServletRequest request) {
 		try {
-			Long id = getID.getId(request);
+			Long id = ID.getId(request);
 
 			return ResponseEntity
 				.status(HttpStatus.OK)
@@ -95,7 +92,7 @@ public class QuestionController {
 	@GetMapping("/get")
 	public ResponseEntity<?> getQuestions(HttpServletRequest request) {
 		try {
-			Long id = getID.getId(request);
+			Long id = ID.getId(request);
 
 			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.getQuestions(id)));
 		} catch (Exception e) {
