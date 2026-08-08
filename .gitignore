@@ -35,3 +35,7 @@ build/
 /.cursor/
 /.idea/
 /.mvn/
+/Dockerfile
+/docker-compose.yml
+/start.sh
+/supervisord.conf
