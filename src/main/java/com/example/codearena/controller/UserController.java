@@ -32,7 +32,6 @@ public class UserController {
 		try {
 			return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseBody("success", service.signUp(dto)));
 		} catch (Exception e) {
-			e.printStackTrace();
 			return ResponseEntity.status(HttpStatus.CONFLICT).body(new ResponseBody("error", e.getMessage()));
 		}
 	}

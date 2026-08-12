@@ -64,9 +64,12 @@ public class ContestService {
 	}
 
 	public List<Contest> viewAvailableContests(Long userID) {
-		List<Contest> contests = contestRepository.findContestByAttenders_Id(userID);
 
-		return contests;
+		return contestRepository
+				.findContestByAttenders_Id(userID)
+				.stream()
+				.filter(contest -> contest.getEndDate().isAfter(Instant.now()))
+				.toList();
 	}
 
 	@Transactional
@@ -144,6 +147,7 @@ public class ContestService {
 			session.setQuestions(new ArrayList<>(contest.getQuestions()));
 			session.setSubmitCount(0);
 			session.setResumeCount(0);
+			session.setCompleted(false);
 
 			sessionRepository.save(session);
 
@@ -159,7 +163,7 @@ public class ContestService {
 			"You have exceeded the resume count, you cannot enter the contest"
 		);
 
-		if (contestSession.getSessionEnd().isBefore(Instant.now())) {
+		if (contestSession.getSessionEnd().isBefore(Instant.now()) || contestSession.isCompleted()) {
 			throw new ExceptionConfig("Your attempt to attend the contest is over");
 		}
 
@@ -288,6 +292,7 @@ public class ContestService {
 
 		if (session.getQuestions().size() == 0) {
 			session.setSessionEnd(Instant.now());
+			session.setCompleted(true);
 		}
 
 		sessionRepository.save(session);

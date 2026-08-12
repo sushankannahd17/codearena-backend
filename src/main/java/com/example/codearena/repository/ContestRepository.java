@@ -16,4 +16,6 @@ public interface ContestRepository extends JpaRepository<Contest, Long> {
 
 	List<Contest> findByAttendersAndEndDateBefore(User attenders, Instant endDateAfter);
 	List<Contest> findByAttendersAndEndDateAfter(User attenders, Instant endDateAfter);
+
+	List<Contest> findByAttenders(User loggedInUser);
 }

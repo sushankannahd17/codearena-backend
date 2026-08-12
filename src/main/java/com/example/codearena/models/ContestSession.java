@@ -42,6 +42,9 @@ public class ContestSession {
 	@Column(name = "resumecount")
 	private Integer resumeCount;
 
+	@Column(name = "completed")
+	private boolean completed;
+
 	@PrePersist
 	private void prepersist() {
 		Instant now = Instant.now();

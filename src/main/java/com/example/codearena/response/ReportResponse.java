@@ -25,4 +25,7 @@ public class ReportResponse {
     private Instant userEndDate;
     private List<Submission> submissions;
     private Integer submitCount;
+    private boolean completed;
+    private boolean contestOver;
+    private Integer solvedCount;
 }

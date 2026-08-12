@@ -1,5 +1,6 @@
 package com.example.codearena.config;
 
+import java.util.Arrays;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -14,11 +15,14 @@ public class CorsConfig {
 	@Value("${client.url}")
 	private String clientURL;
 
+	@Value("${client.url.local:http://localhost:5173}")
+	private String clientURLLocal;
+
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration config = new CorsConfiguration();
 
-		config.setAllowedOrigins(List.of(clientURL));
+		config.setAllowedOrigins(Arrays.asList(clientURL, clientURLLocal));
 		config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"));
 		config.setAllowedHeaders(List.of("*"));
 		config.setAllowCredentials(true);
