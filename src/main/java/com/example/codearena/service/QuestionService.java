@@ -12,6 +12,8 @@ import com.example.codearena.repository.QuestionRepository;
 import com.example.codearena.repository.UserRepository;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -54,13 +56,27 @@ public class QuestionService {
 		return questionRepository.save(question).getId();
 	}
 
+	@PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
 	public String modifyQuestion(QuestionDTO dto, Long questionID) {
 		Question question = questionRepository.findById(questionID).orElseThrow();
+		Long userID = dto.getUserID();
 		question.setTitle(dto.getTitle());
 		question.setDescription(dto.getDescription());
 		question.setUser(
-				userRepository.findById(dto.getUserID()).orElseThrow()
+				userRepository.findById(dto.getUserID()).orElseThrow(() -> new ExceptionConfig("Question not Found"))
 		);
+
+		boolean isAdmin = SecurityContextHolder.getContext()
+				.getAuthentication()
+				.getAuthorities()
+				.stream()
+				.anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+		if (!isAdmin && !question.getUser().getId().equals(userID)) {
+			throw new org.springframework.security.access.AccessDeniedException(
+					"User is not authorized"
+			);
+		}
 
 		for (ExamplesIODTO exampleDTO : dto.getExamplesIO()) {
 			ExamplesIO examplesIO = new ExamplesIO();

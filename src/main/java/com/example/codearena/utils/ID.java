@@ -14,17 +14,21 @@ public class ID {
     public Long getId(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
 
-        Long id = null;
-        for (Cookie cookie : cookies) {
-            if ("jwt".equalsIgnoreCase(cookie.getName())) {
-                id = Long.parseLong(jwtUtils.extractID(cookie.getValue()));
-            }
-        }
-
-        if (id == null) {
+        if (cookies == null) {
             throw new ExceptionConfig("User is not authenticated");
         }
 
-        return id;
+        for (Cookie cookie : cookies) {
+            if ("jwt".equals(cookie.getName())) {
+                try {
+                    String userId = jwtUtils.extractID(cookie.getValue());
+                    return Long.valueOf(userId);
+                } catch (RuntimeException ex) {
+                    throw new ExceptionConfig("User is not authenticated");
+                }
+            }
+        }
+
+        throw new ExceptionConfig("User is not authenticated");
     }
 }

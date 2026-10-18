@@ -20,15 +20,17 @@ public class Contest {
 	public String contestname;
 
 	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name="contest_attenders", joinColumns = @JoinColumn(name = "contest_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
 	public List<User> attenders;
 
 	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name="contest_questions", joinColumns = @JoinColumn(name = "contest_id"), inverseJoinColumns = @JoinColumn(name = "question_id"))
 	public List<Question> questions;
 
 	@Column
 	public Long minutes;
 
-	@OneToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "userID")
 	public User user;
 

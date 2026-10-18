@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import com.example.codearena.security.AuthenticatedUserService;
 
 import static org.junit.jupiter.api.Assertions.*;
 

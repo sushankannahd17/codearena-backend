@@ -2,6 +2,7 @@ package com.example.codearena.controller;
 
 import com.example.codearena.dto.EmailDTO;
 import com.example.codearena.dto.UserDTO;
+import com.example.codearena.security.AuthenticatedUserService;
 import com.example.codearena.service.UserService;
 import com.example.codearena.utils.ID;
 import com.example.codearena.utils.JwtUtils;
@@ -17,15 +18,14 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/auth")
 public class UserController {
-
-	@Autowired
-	private UserService service;
-
-	@Autowired
-	private ID ID;
-
-	@Autowired
-	private JwtUtils jwtUtils;
+	private final UserService service;
+	private final JwtUtils jwtUtils;
+	private final AuthenticatedUserService authenticatedUserService;
+	UserController(AuthenticatedUserService authenticatedUserService, JwtUtils jwtUtils, UserService userService) {
+		this.authenticatedUserService = authenticatedUserService;
+		this.jwtUtils = jwtUtils;
+		this.service = userService;
+	}
 
 	@PostMapping("/signup")
 	public ResponseEntity<?> signUp(@RequestBody UserDTO dto) {
@@ -99,7 +99,7 @@ public class UserController {
 	@GetMapping("/all")
 	public ResponseEntity<?> getAllUsers(HttpServletRequest request) {
 		try {
-			Long id = ID.getId(request);
+			Long id = authenticatedUserService.getCurrentUserId();
 
 			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.getUsers(id)));
 		} catch (Exception e) {
@@ -112,7 +112,7 @@ public class UserController {
 	@GetMapping("/getProfile")
 	public ResponseEntity<?> getProfile(HttpServletRequest request) {
 		try {
-			Long id = ID.getId(request);
+			Long id = authenticatedUserService.getCurrentUserId();
 
 			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.getProfile(id)));
 		} catch (Exception e) {
@@ -166,7 +166,7 @@ public class UserController {
 	@PostMapping("/add-users")
 	public ResponseEntity<?> addUsers(@RequestParam("file")MultipartFile file, HttpServletRequest request) {
 		try {
-			Long id = ID.getId(request);
+			Long id = authenticatedUserService.getCurrentUserId();
 
 			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.addUsers(file, id)));
 		} catch (Exception e) {

@@ -2,6 +2,7 @@ package com.example.codearena.controller;
 
 import com.example.codearena.dto.QuestionDTO;
 import com.example.codearena.dto.TestCasesDTO;
+import com.example.codearena.security.AuthenticatedUserService;
 import com.example.codearena.service.QuestionService;
 import com.example.codearena.utils.ID;
 import com.example.codearena.utils.JwtUtils;
@@ -11,25 +12,25 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/questions")
 public class QuestionController {
+	private final QuestionService service;
+	private final AuthenticatedUserService authenticatedUserService;
 
-	@Autowired
-	private ID ID;
+	QuestionController(QuestionService questionService, JwtUtils jwtUtils, AuthenticatedUserService authenticatedUserService) {
+		this.service = questionService;
+		this.authenticatedUserService = authenticatedUserService;
+	}
 
-	@Autowired
-	private QuestionService service;
-
-	@Autowired
-	private JwtUtils jwtUtils;
-
+	@PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
 	@PostMapping("/create")
 	public ResponseEntity<?> createQuestion(@RequestBody QuestionDTO dto, HttpServletRequest request) {
 		try {
-			Long id = ID.getId(request);
+			Long id = authenticatedUserService.getCurrentUserId();
 
 			dto.setUserID(id);
 
@@ -47,10 +48,11 @@ public class QuestionController {
 		}
 	}
 
+	@PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
 	@PutMapping("/{questionID}")
 	public ResponseEntity<?> createQuestion(@RequestBody QuestionDTO dto, HttpServletRequest request, @PathVariable Long questionID) {
 		try {
-			Long id = ID.getId(request);
+			Long id = authenticatedUserService.getCurrentUserId();
 
 			dto.setUserID(id);
 
@@ -68,6 +70,7 @@ public class QuestionController {
 		}
 	}
 
+	@PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
 	@PatchMapping("/{questionID}/testcases")
 	public ResponseEntity<?> modifyTestCases(
 		@PathVariable Long questionID,
@@ -75,7 +78,7 @@ public class QuestionController {
 		HttpServletRequest request
 	) {
 		try {
-			Long id = ID.getId(request);
+			Long id = authenticatedUserService.getCurrentUserId();
 
 			return ResponseEntity
 				.status(HttpStatus.OK)
@@ -91,10 +94,11 @@ public class QuestionController {
 		}
 	}
 
+	@PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
 	@DeleteMapping("/{questionID}")
 	public ResponseEntity<?> deleteQuestion(@PathVariable Long questionID, HttpServletRequest request) {
 		try {
-			Long id = ID.getId(request);
+			Long id = authenticatedUserService.getCurrentUserId();
 
 			return ResponseEntity
 				.status(HttpStatus.OK)
@@ -110,10 +114,11 @@ public class QuestionController {
 		}
 	}
 
+	@PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
 	@GetMapping("/get")
 	public ResponseEntity<?> getQuestions(HttpServletRequest request) {
 		try {
-			Long id = ID.getId(request);
+			Long id = authenticatedUserService.getCurrentUserId();
 
 			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.getQuestions(id)));
 		} catch (Exception e) {

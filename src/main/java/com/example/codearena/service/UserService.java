@@ -5,6 +5,7 @@ import com.example.codearena.dto.EmailDTO;
 import com.example.codearena.dto.UserDTO;
 import com.example.codearena.models.OTP;
 import com.example.codearena.models.User;
+import com.example.codearena.models.UserRole;
 import com.example.codearena.repository.OTPRepository;
 import com.example.codearena.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -56,6 +57,7 @@ public class UserService {
 		newUser.setEmail(email);
 		newUser.setPassword(passwordEncoder.encode(dto.getPassword()));
 		newUser.setAvailable(true);
+		newUser.setRole(UserRole.CANDIDATE);
 
 		userRepository.save(newUser);
 

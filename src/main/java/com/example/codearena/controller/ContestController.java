@@ -3,7 +3,10 @@ package com.example.codearena.controller;
 import com.example.codearena.dto.ContestDTO;
 import com.example.codearena.dto.ResumeDTO;
 import com.example.codearena.dto.SubmitDTO;
+import com.example.codearena.models.Contest;
+import com.example.codearena.security.AuthenticatedUserService;
 import com.example.codearena.service.ContestService;
+import com.example.codearena.service.UserService;
 import com.example.codearena.utils.ID;
 import com.example.codearena.utils.JwtUtils;
 import com.example.codearena.utils.ResponseBody;
@@ -16,20 +19,18 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/contest")
 public class ContestController {
+	private final ContestService service;
+	private final AuthenticatedUserService authenticatedUserService;
 
-	@Autowired
-	private ContestService service;
-
-	@Autowired
-	private ID ID;
-
-	@Autowired
-	private JwtUtils jwtUtils;
+	ContestController(ContestService contestService, AuthenticatedUserService authenticatedUserService) {
+		this.service = contestService;
+		this.authenticatedUserService = authenticatedUserService;
+	}
 
 	@PostMapping("/create")
 	public ResponseEntity<?> createContest(@RequestBody ContestDTO dto, HttpServletRequest request) {
 		try {
-			Long id = ID.getId(request);
+			Long id = authenticatedUserService.getCurrentUserId();
 
 			return ResponseEntity
 				.status(HttpStatus.CREATED)
@@ -44,7 +45,7 @@ public class ContestController {
 	@GetMapping("/getcreatedcontests")
 	public ResponseEntity<?> getContests(HttpServletRequest request) {
 		try {
-			Long id = ID.getId(request);
+			Long id = authenticatedUserService.getCurrentUserId();
 
 			return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.getContests(id)));
 		} catch (Exception e) {
@@ -57,7 +58,7 @@ public class ContestController {
 	@GetMapping("/viewavailablecontests")
 	public ResponseEntity<?> viewAvailableContests(HttpServletRequest request) {
 		try {
-			Long id = ID.getId(request);
+			Long id = authenticatedUserService.getCurrentUserId();
 
 			return ResponseEntity
 				.status(HttpStatus.OK)
@@ -72,7 +73,7 @@ public class ContestController {
 	@DeleteMapping("/deletecontest/{contestID}")
 	public ResponseEntity<?> deleteContest(HttpServletRequest request, @PathVariable Long contestID) {
 		try {
-			Long id = ID.getId(request);
+			Long id = authenticatedUserService.getCurrentUserId();
 
 			return ResponseEntity
 				.status(HttpStatus.OK)
@@ -95,7 +96,7 @@ public class ContestController {
 		@RequestBody ContestDTO dto
 	) {
 		try {
-			Long id = ID.getId(request);
+			Long id = authenticatedUserService.getCurrentUserId();
 
 			return ResponseEntity
 				.status(HttpStatus.OK)
@@ -114,7 +115,7 @@ public class ContestController {
 	@GetMapping("/{contestID}")
 	public ResponseEntity<?> contestDetails(@PathVariable Long contestID, HttpServletRequest request) {
 		try {
-			Long userID = ID.getId(request);
+			Long userID = authenticatedUserService.getCurrentUserId();
 
 			return ResponseEntity
 				.status(HttpStatus.OK)
@@ -129,7 +130,7 @@ public class ContestController {
 	@PostMapping("/{contestID}/entercontest")
 	public ResponseEntity<?> validateAndEnter(@PathVariable Long contestID, HttpServletRequest request) {
 		try {
-			Long userID = ID.getId(request);
+			Long userID = authenticatedUserService.getCurrentUserId();
 
 			return ResponseEntity
 				.status(HttpStatus.OK)
@@ -152,7 +153,7 @@ public class ContestController {
 			@RequestBody SubmitDTO dto
 	) {
 		try {
-			Long userID = ID.getId(request);
+			Long userID = authenticatedUserService.getCurrentUserId();
 
 			return ResponseEntity
 					.status(HttpStatus.OK)
@@ -176,7 +177,7 @@ public class ContestController {
 		@RequestBody SubmitDTO dto
 	) {
 		try {
-			Long userID = ID.getId(request);
+			Long userID = authenticatedUserService.getCurrentUserId();
 
 			return ResponseEntity
 				.status(HttpStatus.OK)
@@ -200,7 +201,7 @@ public class ContestController {
 		HttpServletRequest request
 	) {
 		try {
-			Long userID = ID.getId(request);
+			Long userID = authenticatedUserService.getCurrentUserId();
 
 			return ResponseEntity
 				.status(HttpStatus.OK)
@@ -215,7 +216,7 @@ public class ContestController {
 	@PatchMapping("/resumecount")
 	public ResponseEntity<?> modifyResumeCount(@RequestBody ResumeDTO dto, HttpServletRequest request) {
 		try {
-			Long userID = ID.getId(request);
+			Long userID = authenticatedUserService.getCurrentUserId();
 
 			return ResponseEntity
 				.status(HttpStatus.OK)
@@ -224,6 +225,30 @@ public class ContestController {
 			return ResponseEntity
 				.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(new ResponseBody("error", e.getMessage()));
+		}
+	}
+
+	@PostMapping("/{contestID}/save")
+	public ResponseEntity<?> saveCode(
+			@PathVariable Long contestID,
+			HttpServletRequest request,
+			@RequestBody SubmitDTO dto
+	) {
+		try {
+			Long userID = authenticatedUserService.getCurrentUserId();
+
+			return ResponseEntity
+					.status(HttpStatus.OK)
+					.body(
+							new ResponseBody(
+									"success",
+									service.saveCode(dto.getCode(), userID, contestID, dto.getQuestionID(), dto.getLanguage())
+							)
+					);
+		} catch (Exception e) {
+			return ResponseEntity
+					.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(new ResponseBody("error", e.getMessage()));
 		}
 	}
 }

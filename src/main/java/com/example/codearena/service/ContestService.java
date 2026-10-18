@@ -8,6 +8,7 @@ import com.example.codearena.response.ContestEnterResponse;
 import com.example.codearena.response.ExecuteResponse;
 import com.example.codearena.response.ResultResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +39,7 @@ public class ContestService {
 	@Autowired
 	private JudgeService judgeService;
 
+	@PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
 	public String createContest(ContestDTO dto, Long userID) {
 		Contest newContest = new Contest();
 		List<Question> questionList = questionRepository.findAllById(dto.getQuestionID());
@@ -317,5 +319,43 @@ public class ContestService {
 		sessionRepository.save(session);
 
 		return "Modified resume count";
+	}
+
+	public String saveCode(String code, Long userID, Long contestID, Long questionID, String language)
+			throws Exception {
+		Contest contest = contestRepository
+				.findById(contestID).orElseThrow();
+		Instant now = Instant.now();
+
+		ContestSession session = sessionRepository.findByContest_IdAndUser_Id(contestID, userID);
+
+		if (now.isBefore(contest.getStartDate())) throw new ExceptionConfig("Contest has not started");
+		if (now.isAfter(contest.getEndDate())) throw new ExceptionConfig("Contest has ended");
+
+		Submission submission = submissionRepository.findByUser_IdAndContest_IdAndQuestion_Id(
+				userID,
+				contestID,
+				questionID
+		);
+
+		if (submission == null) {
+			Submission newSubmission = new Submission();
+			newSubmission.setUser(userRepository.findById(userID).orElseThrow());
+			newSubmission.setContest(contestRepository.findById(contestID).orElseThrow());
+			newSubmission.setQuestion(questionRepository.findById(questionID).orElseThrow());
+			newSubmission.setCode(code);
+			newSubmission.setLanguage(language);
+
+			submissionRepository.save(newSubmission);
+			submission = newSubmission;
+		} else {
+			submission.setCode(code);
+			submission.setLanguage(language);
+			submissionRepository.save(submission);
+		}
+
+		submissionRepository.save(submission);
+
+		return "Code Saved";
 	}
 }

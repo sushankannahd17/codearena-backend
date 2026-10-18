@@ -1,5 +1,6 @@
 package com.example.codearena.controller;
 
+import com.example.codearena.security.AuthenticatedUserService;
 import com.example.codearena.service.LeaderboardService;
 import com.example.codearena.utils.ID;
 import com.example.codearena.utils.ResponseBody;
@@ -14,16 +15,18 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/leaderboard")
 public class LeaderboardController {
-    @Autowired
-    private ID Id;
+    private final LeaderboardService service;
+    private final AuthenticatedUserService authenticatedUserService;
 
-    @Autowired
-    private LeaderboardService service;
+    LeaderboardController(AuthenticatedUserService authenticatedUserService, LeaderboardService leaderboardService) {
+        this.authenticatedUserService = authenticatedUserService;
+        this.service = leaderboardService;
+    }
 
     @GetMapping("/{contestID}")
     public ResponseEntity<?> getLeaderBoard(@PathVariable Long contestID, HttpServletRequest request) {
         try {
-            Long userID = Id.getId(request);
+            Long userID = authenticatedUserService.getCurrentUserId();
 
             return ResponseEntity.status(HttpStatus.OK).body(new ResponseBody("success", service.getLeaderBoard(userID, contestID)));
         } catch (Exception e) {
@@ -34,7 +37,7 @@ public class LeaderboardController {
     @GetMapping("/report/{contestID}")
     public ResponseEntity<?> downloadReport(@PathVariable Long contestID, HttpServletRequest request) {
         try {
-            Long userID = Id.getId(request);
+            Long userID = authenticatedUserService.getCurrentUserId();
 
             byte[] excel = service.generateReport(contestID, userID);
 

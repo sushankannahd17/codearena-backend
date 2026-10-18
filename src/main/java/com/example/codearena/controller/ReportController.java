@@ -2,6 +2,7 @@ package com.example.codearena.controller;
 
 import com.example.codearena.config.ExceptionConfig;
 import com.example.codearena.models.Contest;
+import com.example.codearena.security.AuthenticatedUserService;
 import com.example.codearena.service.ReportService;
 import com.example.codearena.utils.ID;
 import com.example.codearena.utils.ResponseBody;
@@ -16,15 +17,18 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/reports")
 public class ReportController {
-    @Autowired
-    private ID ID;
-    @Autowired
-    private ReportService service;
+    private final ReportService service;
+    private final AuthenticatedUserService authenticatedUserService;
+
+    ReportController(ReportService reportService, AuthenticatedUserService authenticatedUserService) {
+        this.service = reportService;
+        this.authenticatedUserService = authenticatedUserService;
+    }
 
     @GetMapping("/contestsOver")
     public ResponseEntity<?> fetchCompletedContests(HttpServletRequest request) {
         try {
-            Long id = ID.getId(request);
+            Long id = authenticatedUserService.getCurrentUserId();
 
             if (id == null) {
                 throw new ExceptionConfig("User is not authenticated");
@@ -39,7 +43,7 @@ public class ReportController {
     @GetMapping("/export/{contestID}")
     public ResponseEntity<?> downloadReport(@PathVariable long contestID, HttpServletRequest request) {
         try {
-            Long id = ID.getId(request);
+            Long id = authenticatedUserService.getCurrentUserId();
 
             if (id == null) {
                 throw new ExceptionConfig("User is not authenticated");
